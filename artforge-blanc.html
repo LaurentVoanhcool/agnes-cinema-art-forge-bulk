@@ -1,0 +1,2529 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ArtForge — générateur d'images stylisées</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ArtForge v5 — style.css
+   Variables, reset, layout, composants de base
+============================================================ */
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0b0d12;
+  --bg2:#11151d;
+  --bg3:#171d27;
+  --line:#293342;
+  --line2:#3a485b;
+  --ink:#f0f3f8;
+  --ink2:#a9b4c5;
+  --ink3:#718096;
+  --gold:#e7bd76;
+  --gold-dim:rgba(231,189,118,.12);
+  --cyan:#7ccbd0;
+  --cyan-dim:rgba(124,203,208,.11);
+  --green:#76c7a0;
+  --green-dim:rgba(118,199,160,.12);
+  --red:#e47f82;
+  --red-dim:rgba(228,127,130,.12);
+  --radius:14px;
+  --radius-sm:9px;
+}
+
+body{
+  font:14px/1.55 system-ui,-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 82% -10%,rgba(124,203,208,.08),transparent 35%),var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+}
+
+/* ---------- TOPBAR ---------- */
+#topbar{
+  position:fixed;top:0;left:0;right:0;min-height:58px;
+  padding:.65rem 1.25rem;
+  background:rgba(11,13,18,.94);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+  z-index:50;display:flex;align-items:center;gap:.8rem;
+  font:12px ui-monospace,monospace;
+}
+#modeTag{
+  padding:.22rem .65rem;border-radius:100px;
+  border:1px solid var(--line);color:var(--ink3);
+  font-weight:700;font-size:.68rem;
+}
+#modeTag.live{border-color:var(--green);color:var(--green)}
+#globalStat{
+  color:var(--ink2);flex:1;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;
+}
+
+/* ---------- MAIN LAYOUT ---------- */
+#main{max-width:1200px;margin:0 auto;padding:5rem 1.2rem 130px}
+h1{
+  font-family:Georgia,serif;font-size:1.9rem;color:var(--gold);
+  font-weight:400;letter-spacing:-.03em;margin-bottom:.3rem;
+}
+.sub{color:var(--ink2);font-size:.9rem;margin-bottom:1.4rem}
+h2{color:var(--gold);font-size:1.15rem;margin:1.2rem 0 .7rem;font-weight:500}
+
+/* ---------- CARD ---------- */
+.card{
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;
+  box-shadow:0 8px 28px rgba(0,0,0,.12);
+}
+
+/* ---------- FORM ELEMENTS ---------- */
+label.lab{
+  display:block;font-size:.68rem;color:var(--ink2);
+  text-transform:uppercase;letter-spacing:.1em;
+  font-weight:700;margin:.7rem 0 .35rem;
+}
+input[type=text],
+input[type=password],
+input[type=number],
+textarea,
+select{
+  width:100%;background:#0d1118;border:1px solid #303b4b;
+  border-radius:9px;padding:.7rem .85rem;
+  font:13px system-ui,sans-serif;color:var(--ink);
+  outline:none;transition:.15s;min-height:42px;
+}
+textarea{min-height:88px;line-height:1.65;resize:vertical;font-family:inherit}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(231,189,118,.13);
+}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  min-height:42px;padding:.65rem 1.1rem;border-radius:9px;
+  font:700 .82rem system-ui,sans-serif;cursor:pointer;border:1px solid;
+  transition:.15s;display:inline-flex;align-items:center;
+  justify-content:center;gap:.4rem;
+}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.btn-mega{
+  min-height:52px;background:var(--gold);color:#15130f;border:none;
+  font-size:.95rem;font-weight:800;width:100%;
+  box-shadow:0 7px 24px rgba(231,189,118,.13);margin-top:1rem;
+}
+.btn-gold{background:var(--gold-dim);border-color:rgba(231,189,118,.5);color:var(--gold)}
+.btn-cyan{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.btn-red{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.btn-slate{background:var(--bg3);border-color:var(--line);color:var(--ink2);font-size:.72rem}
+
+.btn-mini{
+  background:transparent;border:1px solid var(--line);color:var(--ink2);
+  font-size:.66rem;padding:.32rem .7rem;border-radius:6px;
+  cursor:pointer;font-family:inherit;transition:.15s;min-height:0;
+}
+.btn-mini:hover{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
+.btn-mini.active{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
+
+/* ---------- TABS ---------- */
+.tabs{display:flex;gap:.35rem;margin-bottom:1.2rem;flex-wrap:wrap}
+.tab{
+  padding:.65rem 1rem;border-radius:10px;
+  border:1px solid var(--line);background:var(--bg2);color:var(--ink2);
+  cursor:pointer;font-weight:600;font-size:.82rem;transition:.15s;
+}
+.tab.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+
+/* ---------- DROP ZONE ---------- */
+.drop{
+  border:2px dashed #3a4657;border-radius:12px;padding:1.3rem;
+  text-align:center;cursor:pointer;position:relative;
+  background:rgba(255,255,255,.015);transition:.15s;
+}
+.drop:hover{border-color:var(--gold);background:var(--gold-dim)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop .icon{font-size:1.8rem;opacity:.55;margin-bottom:.3rem}
+.drop .txt{font-size:.82rem;color:var(--ink2)}
+
+/* ---------- PREVIEW ---------- */
+.preview{margin-top:.7rem;position:relative;display:inline-block;max-width:220px}
+.preview img{
+  max-width:100%;border-radius:9px;
+  border:1px solid var(--line);display:block;
+}
+.preview .rm{
+  position:absolute;top:4px;right:4px;
+  background:rgba(228,127,130,.95);color:#fff;
+  border:none;border-radius:50%;width:22px;height:22px;
+  cursor:pointer;font-size:.7rem;
+}
+
+/* ---------- STATUS ---------- */
+.status{
+  font:12px/1.5 system-ui,sans-serif;padding:.7rem .9rem;
+  border-radius:9px;background:var(--bg3);color:var(--ink2);
+  border-left:3px solid var(--line);word-break:break-word;margin-top:.5rem;
+}
+.status.ok{background:var(--green-dim);color:var(--green);border-left-color:var(--green)}
+.status.err{background:var(--red-dim);color:var(--red);border-left-color:var(--red)}
+.status.warn{background:rgba(231,189,118,.12);color:var(--gold);border-left-color:var(--gold)}
+
+/* ---------- STEPS ---------- */
+.step{
+  display:flex;align-items:flex-start;gap:.6rem;
+  padding:.7rem .9rem;background:var(--bg3);
+  border:1px solid var(--line);border-radius:9px;
+  margin-bottom:.5rem;font-size:.82rem;
+}
+.step .ico{flex-shrink:0;font-size:1.05rem}
+.step .msg{flex:1;color:var(--ink2)}
+.step.running .msg{color:var(--cyan)}
+.step.done{border-left:3px solid var(--green)}
+.step.error{border-left:3px solid var(--red);background:var(--red-dim)}
+.step.error .msg{color:var(--red)}
+
+/* ---------- SPINNER ---------- */
+.spinner{
+  display:inline-block;width:12px;height:12px;
+  border:2px solid rgba(231,189,118,.22);
+  border-top-color:var(--gold);border-radius:50%;
+  animation:spin .8s linear infinite;
+  vertical-align:middle;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============================================================
+   GRILLES & CARTES IMAGE
+============================================================ */
+.result-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:1rem;margin-top:1rem;
+}
+
+.img-card{
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:var(--radius);overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+}
+.img-card .img-wrap{padding:.5rem;position:relative}
+.img-card img{
+  width:100%;display:block;border-radius:8px;background:var(--bg);
+}
+.img-card .img-wrap .old{
+  opacity:.55;margin-bottom:.5rem;border:1px solid var(--red);
+  position:relative;
+}
+.img-card .img-wrap .old::after{
+  content:'ancienne';position:absolute;top:4px;right:4px;
+  background:var(--red);color:#fff;font-size:.6rem;
+  padding:.15rem .4rem;border-radius:4px;
+}
+.img-card .img-wrap .new{border:2px solid var(--green)}
+
+/* Bouton favori ⭐ */
+.img-card .fav-btn{
+  position:absolute;top:12px;right:12px;
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid var(--line2);
+  background:rgba(11,13,18,.78);
+  color:var(--ink3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;z-index:2;transition:.15s;
+  backdrop-filter:blur(4px);
+}
+.img-card .fav-btn:hover{
+  border-color:var(--gold);color:var(--gold);transform:scale(1.08);
+}
+.img-card .fav-btn.active{
+  background:var(--gold);color:#15130f;border-color:var(--gold);
+}
+
+.img-card .info{
+  padding:.6rem .75rem;border-top:1px solid var(--line);
+  display:flex;flex-direction:column;gap:.4rem;
+}
+.img-card .info .meta{
+  font-size:.65rem;color:var(--ink3);
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.img-card .info textarea{
+  min-height:70px;font:11px/1.5 ui-monospace,monospace;margin:0;
+}
+.img-card .info .actions{display:flex;gap:.35rem;flex-wrap:wrap}
+
+/* ============================================================
+   SESSIONS (bibliothèque groupée)
+============================================================ */
+.session-block{
+  border:1px solid var(--line);border-radius:var(--radius);
+  margin-bottom:1rem;overflow:hidden;
+}
+.session-header{
+  display:flex;align-items:center;gap:.8rem;
+  padding:.9rem 1.1rem;background:var(--bg3);
+  cursor:pointer;user-select:none;transition:.15s;
+}
+.session-header:hover{background:rgba(231,189,118,.06)}
+.session-header .s-arrow{
+  font-size:.8rem;color:var(--gold);
+  transition:.2s;width:14px;text-align:center;
+}
+.session-block.open .s-arrow{transform:rotate(90deg)}
+.session-header .s-title{
+  font-weight:600;font-size:.9rem;color:var(--gold);flex:1;
+}
+.session-header .s-meta{font-size:.7rem;color:var(--ink3)}
+.session-body{padding:1rem;display:none}
+.session-block.open .session-body{display:block}
+
+/* ============================================================
+   PAGINATION
+============================================================ */
+.pagination{
+  display:flex;align-items:center;justify-content:center;
+  gap:.5rem;margin-top:1.2rem;flex-wrap:wrap;
+}
+.pagination .btn-mini{min-width:80px}
+.pagination .page-info{font-size:.8rem;color:var(--ink2)}
+
+/* ============================================================
+   FILTRE BAR (favoris uniquement)
+============================================================ */
+.filter-bar{
+  display:flex;gap:.5rem;align-items:center;
+  margin-bottom:1rem;flex-wrap:wrap;
+}
+.filter-bar .chk{
+  display:flex;align-items:center;gap:.4rem;
+  font-size:.8rem;color:var(--ink2);cursor:pointer;
+}
+.filter-bar .chk input{
+  width:16px;height:16px;min-height:16px;
+  accent-color:var(--gold);cursor:pointer;
+}
+
+/* ============================================================
+   PANNEAU CLÉS API
+============================================================ */
+#apiPanel{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(17,21,29,.98);
+  border-top:1px solid var(--line2);
+  box-shadow:0 -10px 34px rgba(0,0,0,.25);
+  z-index:40;
+}
+#apiHead{
+  min-height:48px;padding:.75rem 1.2rem;
+  cursor:pointer;display:flex;align-items:center;gap:.8rem;
+  user-select:none;
+}
+#apiHead:hover{background:rgba(231,189,118,.04)}
+#apiHead .lbl{
+  font:700 .72rem ui-monospace;color:var(--gold);letter-spacing:.1em;
+}
+#apiBody{
+  padding:1rem 1.2rem;border-top:1px solid var(--line);
+  max-height:55vh;overflow-y:auto;display:none;
+}
+#apiBody.open{display:block}
+
+/* ============================================================
+   TOAST
+============================================================ */
+#toast{
+  position:fixed;top:68px;left:50%;
+  transform:translateX(-50%) translateY(-140px);
+  background:var(--bg2);border:1px solid var(--line);
+  border-left:3px solid var(--gold);border-radius:11px;
+  padding:.85rem 1.1rem;font-size:.82rem;z-index:200;
+  opacity:0;transition:.3s;max-width:min(560px,92vw);
+  text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.45);
+}
+#toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.ok{border-left-color:var(--green)}
+#toast.err{border-left-color:var(--red)}
+#toast.info{border-left-color:var(--cyan)}
+#toast.warn{border-left-color:var(--gold)}
+/* ============================================================
+   ÉDITEURS (styles + storyboards)
+============================================================ */
+.style-editor,.sb-editor{
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:12px;padding:1rem;margin-bottom:.9rem;
+}
+.style-editor h4,.sb-editor h4{
+  display:flex;align-items:center;gap:.5rem;
+  font-size:.95rem;margin-bottom:.5rem;flex-wrap:wrap;
+}
+.style-editor .slug,.sb-editor .slug{
+  font:600 .65rem ui-monospace;color:var(--ink3);
+}
+.style-editor textarea,.sb-editor textarea{
+  min-height:180px;font-family:ui-monospace,monospace;
+  font-size:11.5px;line-height:1.6;
+}
+.sb-editor .items-area{
+  min-height:140px;font-family:ui-monospace,monospace;
+  font-size:12px;line-height:1.6;
+}
+.style-editor .actions,.sb-editor .actions{
+  display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap;
+}
+
+/* ============================================================
+   PIPELINE CONTROLS (pause/stop/reprendre)
+============================================================ */
+.pipeline-ctrl{
+  display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap;
+}
+.pipeline-ctrl .btn{flex:1;min-width:120px}
+
+/* ============================================================
+   LOGIN
+============================================================ */
+#loginBox{max-width:420px;margin:6rem auto}
+
+/* ============================================================
+   UTILITAIRES
+============================================================ */
+.hidden{display:none!important}
+
+/* ============================================================
+   CHECKBOX ROW (Pack storyboard)
+============================================================ */
+.chk-row{
+  display:flex;align-items:center;gap:.6rem;
+  margin-top:.9rem;padding:.75rem .9rem;
+  background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;cursor:pointer;transition:.15s;
+}
+.chk-row:hover{border-color:var(--gold)}
+.chk-row input{
+  width:18px;height:18px;min-height:18px;
+  accent-color:var(--gold);cursor:pointer;flex-shrink:0;
+}
+.chk-row label{
+  font-size:.85rem;color:var(--ink);cursor:pointer;flex:1;
+}
+.chk-row .hint{font-size:.7rem;color:var(--ink3)}
+
+/* ============================================================
+   MODAL CUSTOM
+============================================================ */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(4px);
+  z-index:150;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:.2s;padding:1rem;
+}
+.modal-overlay.on{opacity:1;pointer-events:auto}
+
+.modal-box{
+  background:var(--bg2);border:1px solid var(--line2);
+  border-radius:16px;padding:1.4rem;
+  max-width:520px;width:100%;
+  box-shadow:0 24px 64px rgba(0,0,0,.6);
+  transform:translateY(12px);transition:.2s;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-overlay.on .modal-box{transform:translateY(0)}
+
+.modal-box h3{
+  color:var(--gold);font-size:1.1rem;
+  margin-bottom:.8rem;font-weight:600;
+}
+.modal-box p{
+  color:var(--ink2);font-size:.85rem;
+  margin-bottom:.9rem;line-height:1.6;
+}
+.modal-box .modal-actions{
+  display:flex;gap:.5rem;justify-content:flex-end;
+  margin-top:1rem;flex-wrap:wrap;
+}
+.modal-box .modal-actions .btn{min-width:100px}
+
+/* ============================================================
+   THEME — BLANC FUTURISTE (inspiration 2Advanced)
+   Couche de surcharge : aucune règle de logique touchée
+============================================================ */
+:root{
+  --bg:#f3f6fb;--bg2:#ffffff;--bg3:#ecf1f8;
+  --line:#d3dbe8;--line2:#b4c1d4;
+  --ink:#0e1726;--ink2:#46566d;--ink3:#8192a9;
+  --gold:#0b63ce;--gold-dim:rgba(11,99,206,.08);
+  --cyan:#0097b2;--cyan-dim:rgba(0,151,178,.09);
+  --green:#0c9a67;--green-dim:rgba(12,154,103,.09);
+  --red:#e0483e;--red-dim:rgba(224,72,62,.09);
+  --orange:#ff7a1a;--radius:4px;--radius-sm:3px;
+  --mono:'Space Mono',ui-monospace,monospace;--disp:'Orbitron','Segoe UI',sans-serif;
+  --chamfer:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));
+}
+html{scroll-behavior:smooth}
+body{
+  font:14px/1.6 'Inter',system-ui,-apple-system,sans-serif;color:var(--ink);
+  background:
+    radial-gradient(ellipse 70% 45% at 88% -8%,rgba(11,99,206,.10),transparent 60%),
+    radial-gradient(ellipse 55% 40% at -5% 105%,rgba(255,122,26,.07),transparent 60%),
+    linear-gradient(180deg,#f9fbfe,#eef3fa);
+  background-attachment:fixed;
+}
+/* grille technique + balayage */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(11,99,206,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(11,99,206,.055) 1px,transparent 1px),
+    linear-gradient(rgba(11,99,206,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(11,99,206,.03) 1px,transparent 1px);
+  background-size:120px 120px,120px 120px,24px 24px,24px 24px;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 30%,transparent 85%);
+  mask-image:radial-gradient(ellipse at 50% 30%,#000 30%,transparent 85%);
+}
+body::after{
+  content:"";position:fixed;left:0;right:0;top:-30%;height:30%;pointer-events:none;z-index:1;
+  background:linear-gradient(180deg,transparent,rgba(11,99,206,.045),transparent);
+  animation:scan 9s linear infinite;
+}
+@keyframes scan{to{top:110%}}
+#main,#loginBox{position:relative;z-index:2}
+::selection{background:var(--gold);color:#fff}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#e6ecf5}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--gold),var(--cyan));border-radius:0}
+
+/* HUD décoratif */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:45}
+#hud .c{position:absolute;width:26px;height:26px;border:0 solid var(--gold);opacity:.75}
+#hud .tl{top:64px;left:10px;border-top-width:2px;border-left-width:2px}
+#hud .tr{top:64px;right:10px;border-top-width:2px;border-right-width:2px}
+#hud .bl{bottom:58px;left:10px;border-bottom-width:2px;border-left-width:2px;border-color:var(--orange)}
+#hud .br{bottom:58px;right:10px;border-bottom-width:2px;border-right-width:2px;border-color:var(--orange)}
+#hud .coord{position:absolute;right:48px;top:68px;font:700 9px var(--mono);letter-spacing:.22em;color:var(--ink3);text-transform:uppercase}
+#hud .coord b{color:var(--orange)}
+#hud .rail{position:absolute;left:14px;top:50%;width:1px;height:90px;background:linear-gradient(transparent,var(--gold),transparent);transform:translateY(-50%)}
+@media(max-width:760px){#hud .coord,#hud .rail{display:none}}
+
+/* Topbar */
+#topbar{
+  background:rgba(255,255,255,.82);backdrop-filter:blur(18px) saturate(1.4);
+  border-bottom:1px solid var(--line);box-shadow:0 6px 24px rgba(14,23,38,.06);
+  font:700 11px var(--mono);letter-spacing:.06em;
+}
+#topbar::after{
+  content:"";position:absolute;left:0;bottom:-1px;height:2px;width:100%;
+  background:linear-gradient(90deg,var(--gold),var(--cyan),var(--orange),var(--gold));
+  background-size:300% 100%;animation:flow 7s linear infinite;
+}
+@keyframes flow{to{background-position:300% 0}}
+#modeTag{border-radius:0;clip-path:var(--chamfer);background:var(--bg3);border:none;padding:.3rem .8rem;letter-spacing:.14em}
+#modeTag.live{background:var(--green-dim);color:var(--green)}
+#modeTag.live::before{content:"";display:inline-block;width:6px;height:6px;margin-right:.45rem;background:var(--green);border-radius:50%;animation:pulse 1.6s ease-in-out infinite;vertical-align:middle}
+@keyframes pulse{50%{opacity:.25;transform:scale(.6)}}
+#globalStat{color:var(--ink2)}
+
+/* Titres */
+h1{
+  font:900 1.9rem var(--disp);letter-spacing:.14em;text-transform:uppercase;
+  background:linear-gradient(100deg,var(--ink) 20%,var(--gold) 75%,var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:.4rem;
+}
+h2{font:700 .95rem var(--disp);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--line);padding-bottom:.5rem}
+h2::before{content:"▸ ";color:var(--orange)}
+.sub{font-size:.85rem;color:var(--ink2)}
+.sub::before{content:"// ";font-family:var(--mono);color:var(--orange);font-weight:700}
+#loginBox .sub::before,.pagination .sub::before,#historyBox>.sub::before,#favBox>.sub::before{content:""}
+
+/* Cartes à coins techniques */
+.card,.style-editor,.sb-editor,.session-block,.img-card,.step,.modal-box{
+  border-radius:0;background:rgba(255,255,255,.88);backdrop-filter:blur(6px);
+  box-shadow:0 1px 0 #fff inset,0 10px 30px rgba(21,48,92,.07);
+}
+.card,.style-editor,.sb-editor,.modal-box{position:relative;border-color:var(--line)}
+.card::before,.style-editor::before,.sb-editor::before,.modal-box::before{
+  content:"";position:absolute;top:-1px;left:-1px;width:16px;height:16px;
+  border-top:2px solid var(--gold);border-left:2px solid var(--gold);pointer-events:none}
+.card::after,.style-editor::after,.sb-editor::after,.modal-box::after{
+  content:"";position:absolute;bottom:-1px;right:-1px;width:16px;height:16px;
+  border-bottom:2px solid var(--orange);border-right:2px solid var(--orange);pointer-events:none}
+.card{animation:rise .5s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+
+/* Formulaires */
+label.lab{font:700 .64rem var(--mono);letter-spacing:.18em;color:var(--gold)}
+label.lab::before{content:"[ ";color:var(--ink3)}label.lab::after{content:" ]";color:var(--ink3)}
+input[type=text],input[type=password],input[type=number],textarea,select{
+  background:linear-gradient(180deg,#fff,#f6f9fd);border:1px solid var(--line2);border-radius:0;
+  color:var(--ink);font:13px 'Inter',sans-serif;box-shadow:inset 0 1px 3px rgba(14,23,38,.05);
+}
+textarea,.style-editor textarea,.sb-editor textarea,.img-card .info textarea{font-family:var(--mono);font-size:11.5px}
+input:focus,textarea:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(11,99,206,.12),0 0 18px rgba(11,99,206,.12)}
+select{appearance:none;-webkit-appearance:none;padding-right:2rem;
+  background:linear-gradient(45deg,transparent 50%,var(--gold) 50%) calc(100% - 17px) 55%/6px 6px no-repeat,
+             linear-gradient(135deg,var(--gold) 50%,transparent 50%) calc(100% - 12px) 55%/6px 6px no-repeat,
+             linear-gradient(180deg,#fff,#f6f9fd)}
+
+/* Boutons chanfreinés */
+.btn,.btn-mega,.tab{border-radius:0;clip-path:var(--chamfer);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.btn{font-size:.74rem}
+.btn-mega{
+  background:linear-gradient(100deg,var(--gold),#2a8cff 55%,var(--cyan));color:#fff;
+  font:700 .85rem var(--disp);letter-spacing:.2em;box-shadow:none;position:relative;overflow:hidden;transition:.25s;
+}
+.btn-mega::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%)}
+.btn-mega:hover:not(:disabled)::after{transform:translateX(120%);transition:transform .7s}
+.btn-mega:hover:not(:disabled){filter:brightness(1.06)}
+.btn-gold{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.btn-cyan{background:var(--cyan-dim)}.btn-red{background:var(--red-dim)}
+.btn-slate{background:var(--bg3);color:var(--ink2)}
+.btn:hover:not(:disabled){box-shadow:0 0 0 1px currentColor inset,0 4px 16px rgba(11,99,206,.18)}
+.btn-mini{border-radius:0;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;background:#fff}
+.btn-mini:hover,.btn-mini.active{box-shadow:0 0 12px rgba(11,99,206,.2)}
+
+/* Onglets */
+.tabs{gap:.25rem;border-bottom:1px solid var(--line);padding-bottom:.6rem}
+.tab{background:#fff;border:none;font-size:.68rem;letter-spacing:.12em;box-shadow:inset 0 0 0 1px var(--line);position:relative}
+.tab:hover{color:var(--gold)}
+.tab.active{background:linear-gradient(135deg,var(--gold),var(--cyan));color:#fff;box-shadow:none}
+
+/* Dépose / aperçu */
+.drop{border:1.5px dashed var(--line2);border-radius:0;background:
+  repeating-linear-gradient(45deg,transparent 0 10px,rgba(11,99,206,.03) 10px 11px)}
+.drop:hover{border-color:var(--gold);background-color:var(--gold-dim)}
+.drop .icon{opacity:.8;filter:grayscale(.3)}
+.preview img{border-radius:0;border:1px solid var(--line2);box-shadow:0 6px 20px rgba(14,23,38,.12)}
+.preview .rm{border-radius:0;background:var(--red)}
+
+/* Statuts / étapes */
+.status{border-radius:0;font-family:var(--mono);font-size:11px;background:var(--bg3);border-left:3px solid var(--line2)}
+.status.warn{background:rgba(255,122,26,.1);color:#c25500;border-left-color:var(--orange)}
+.step{background:#fff;animation:rise .35s ease both;font-family:var(--mono);font-size:.76rem}
+.step.running .msg{color:var(--gold)}
+.spinner{border-color:rgba(11,99,206,.2);border-top-color:var(--gold)}
+
+/* Images */
+.img-card{transition:.25s;position:relative}
+.img-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(21,48,92,.15);border-color:var(--gold)}
+.img-card::before{content:"";position:absolute;top:0;left:0;width:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--orange));transition:.4s;z-index:3}
+.img-card:hover::before{width:100%}
+.img-card img{border-radius:0;background:var(--bg3)}
+.img-card .info{border-top:1px solid var(--line);background:linear-gradient(180deg,#fff,#f4f7fc)}
+.img-card .info .meta{font-family:var(--mono);color:var(--gold);letter-spacing:.12em}
+.img-card .fav-btn{border-radius:0;clip-path:var(--chamfer);background:rgba(255,255,255,.92);border:none;color:var(--ink3);box-shadow:0 2px 8px rgba(14,23,38,.2)}
+.img-card .fav-btn.active{background:var(--orange);color:#fff}
+.img-card .img-wrap .old::after{border-radius:0}
+
+/* Sessions / pagination / filtre */
+.session-block{border-color:var(--line)}
+.session-header{background:linear-gradient(90deg,#fff,var(--bg3))}
+.session-header:hover{background:var(--gold-dim)}
+.session-header .s-title{font:700 .78rem var(--disp);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.session-header .s-meta,.pagination .page-info,.style-editor .slug,.sb-editor .slug{font-family:var(--mono)}
+.chk-row{background:#fff;border-radius:0;border-color:var(--line)}
+.chk-row label{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em}
+.filter-bar .chk{font-family:var(--mono)}
+
+/* Panneau clés API, toast, modale */
+#apiPanel{background:rgba(255,255,255,.93);backdrop-filter:blur(16px);border-top:1px solid var(--line2);box-shadow:0 -10px 34px rgba(21,48,92,.1)}
+#apiPanel::before{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:linear-gradient(90deg,var(--orange),var(--gold),var(--cyan))}
+#apiHead .lbl{font-family:var(--disp);letter-spacing:.2em}
+code{font-family:var(--mono);background:var(--bg3);padding:.05rem .3rem;color:var(--gold)}
+#toast{background:#fff;border-radius:0;font-family:var(--mono);font-size:.76rem;color:var(--ink);box-shadow:0 12px 36px rgba(21,48,92,.2);border-left-width:4px}
+.modal-overlay{background:rgba(228,236,247,.72);backdrop-filter:blur(7px)}
+.modal-box{box-shadow:0 30px 80px rgba(21,48,92,.25)}
+.modal-box h3{font:700 1rem var(--disp);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.modal-box p{color:var(--ink2)}
+#loginBox{box-shadow:0 30px 80px rgba(21,48,92,.14)}
+
+</style>
+</head>
+<body>
+<div id="hud" aria-hidden="true"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><i class="rail"></i><span class="coord">ARTFORGE // V5 · <b>SYS.ONLINE</b></span></div>
+
+<div id="topbar">
+  <span id="modeTag">NON CONFIGURÉ</span>
+  <span id="globalStat">Ajoutez vos clés API pour commencer</span>
+  <button class="btn-slate hidden" id="logoutBtn" style="margin-left:auto">↻ Déconnexion</button>
+</div>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginBox" class="card">
+  <h1 style="text-align:center">ArtForge</h1>
+  <p class="sub" style="text-align:center">Pseudo + PIN 4 chiffres · Connexion / Inscription en 1 étape</p>
+  <label class="lab">Pseudo</label>
+  <input type="text" id="loginUser" placeholder="Votre pseudo" autocomplete="username">
+  <label class="lab">PIN (4 chiffres)</label>
+  <input type="password" id="loginPin" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="current-password">
+  <button class="btn-mega" id="loginBtn">Se connecter / Créer un compte</button>
+  <div id="loginStatus" class="status" style="margin-top:.6rem"></div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="main" class="hidden">
+  <h1>ArtForge</h1>
+  <p class="sub">Photo + prompt + style → image stylisée. Agnes IA · txt2img uniquement.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="create">🎨 Créer</button>
+    <button class="tab" data-tab="admin">⚙️ Admin styles</button>
+    <button class="tab" data-tab="bulk">📋 Bulk</button>
+    <button class="tab" data-tab="history">🖼️ Ma bibliothèque</button>
+    <button class="tab" data-tab="favorites">⭐ Favoris</button>
+  </div>
+
+  <!-- ================= CRÉER ================= -->
+  <section id="tab-create">
+    <div class="card">
+      <label class="lab">Style</label>
+      <select id="styleSelect"></select>
+
+      <label class="lab">Prompt / intention (optionnel)</label>
+      <textarea id="promptInput" placeholder="Décris la scène, l'ambiance, le personnage… (laisse vide si tu fournis juste une photo)"></textarea>
+
+      <div class="chk-row" id="optimizerRow" style="margin-top:.7rem">
+        <input type="checkbox" id="aiOptimizerCheck">
+        <label for="aiOptimizerCheck">✨ IA Optimizer</label>
+        <span class="hint">désactivé = prompt direct, sans appel IA de rédaction</span>
+      </div>
+      <p class="sub" style="font-size:.75rem;margin-top:.35rem">Sans optimizer, le prompt utilisateur + le style + chaque élément bulk sont assemblés directement. Avec optimizer, l’IA réécrit chaque prompt, puis l’image démarre immédiatement sans attendre les prompts suivants.</p>
+
+      <label class="lab">Image source (optionnel)</label>
+      <div class="drop" id="imageDrop">
+        <input type="file" id="imageInput" accept="image/*">
+        <div class="icon">📷</div>
+        <div class="txt">Cliquez ou glissez une image</div>
+      </div>
+      <div id="imagePreviewWrap"></div>
+
+      <div class="row" style="margin-top:.9rem">
+        <div>
+          <label class="lab">Taille</label>
+          <select id="sizeSelect">
+            <option value="1K">1K</option>
+            <option value="2K" selected>2K</option>
+            <option value="3K">3K</option>
+            <option value="4K">4K</option>
+          </select>
+        </div>
+        <div>
+          <label class="lab">Ratio</label>
+          <select id="ratioSelect">
+            <option value="1:1">1:1</option>
+            <option value="3:4">3:4</option>
+            <option value="4:3">4:3</option>
+            <option value="16:9">16:9</option>
+            <option value="9:16" selected>9:16</option>
+            <option value="2:3">2:3</option>
+            <option value="3:2">3:2</option>
+            <option value="21:9">21:9</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:.5rem">
+        <div>
+          <label class="lab">Nombre d'images (par élément storyboard)</label>
+          <input type="number" id="countInput" min="1" max="10" value="1" style="min-height:42px">
+        </div>
+        <div>
+          <label class="lab">Concurrence</label>
+          <select id="concurrencySelect">
+            <option value="1">1 (séquentiel)</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="8">8</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="chk-row" id="storyboardRow">
+        <input type="checkbox" id="storyboardCheck">
+        <label for="storyboardCheck">📖 Pack storyboard</label>
+        <span class="hint" id="sbHint">— utiliser la liste active pour multiplier les plans</span>
+      </div>
+
+      <div id="sbSelectWrap" class="hidden" style="margin-top:.7rem">
+        <label class="lab">Storyboard à utiliser</label>
+        <select id="storyboardSelect"></select>
+      </div>
+
+      <button class="btn-mega" id="generateBtn">🎬 Générer</button>
+      <div class="pipeline-ctrl hidden" id="pipelineCtrl">
+        <button class="btn btn-cyan" id="pauseBtn">⏸ Pause</button>
+        <button class="btn btn-red" id="stopBtn">⏹ Stop</button>
+        <button class="btn btn-gold hidden" id="resumeBtn">▶ Reprendre</button>
+      </div>
+    </div>
+
+    <div id="stepsBox" class="hidden" style="margin-top:1rem"></div>
+    <div id="resultsBox" class="hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <h2 style="margin:0;border:none;font-size:1.1rem">Résultats</h2>
+        <span class="status" id="resultsCount" style="margin:0;padding:.3rem .7rem">0 / 0</span>
+      </div>
+      <div class="result-grid" id="resultGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= ADMIN ================= -->
+  <section id="tab-admin" class="hidden">
+    <h2>Mes styles</h2>
+    <p class="sub" style="font-size:.82rem">Éditez vos prompts de style. <b>✨ IA améliore</b> réécrit le prompt via Agnes. <b>+ Nouveau style</b> ajoute un style personnalisé.</p>
+    <button class="btn btn-gold" id="addStyleBtn" style="margin-bottom:1rem">+ Nouveau style</button>
+    <div id="styleEditors"></div>
+  </section>
+
+  <!-- ================= BULK ================= -->
+  <section id="tab-bulk" class="hidden">
+    <h2>Listes storyboard (Bulk)</h2>
+    <p class="sub" style="font-size:.82rem">Chaque élément de la liste est une contrainte obligatoire et visible dans l’image. Avec IA Optimizer désactivé, le prompt est assemblé directement ; avec IA Optimizer activé, chaque prompt est optimisé puis son image démarre immédiatement. <b>✨ IA améliore</b> nettoie la liste sans ajouter d'objets inventés.</p>
+    <button class="btn btn-gold" id="addSbBtn" style="margin-bottom:1rem">+ Nouvelle liste</button>
+    <div id="sbEditors"></div>
+  </section>
+
+  <!-- ================= HISTORIQUE ================= -->
+  <section id="tab-history" class="hidden">
+    <h2>Ma bibliothèque</h2>
+    <p class="sub" style="font-size:.82rem">Vos générations par sessions de 3 images visibles. Cliquez sur un bloc de session pour tout voir. Cliquez sur ⭐ pour ajouter aux favoris.</p>
+    <div class="filter-bar">
+      <label class="chk">
+        <input type="checkbox" id="historyFavOnly">
+        <span>⭐ Favoris uniquement</span>
+      </label>
+    </div>
+    <div id="historyBox"></div>
+    <div id="historyPagination" class="pagination hidden"></div>
+  </section>
+
+  <!-- ================= FAVORIS ================= -->
+  <section id="tab-favorites" class="hidden">
+    <h2>⭐ Mes favoris</h2>
+    <p class="sub" style="font-size:.82rem">Toutes les images que vous avez marquées ⭐, les plus récentes en premier.</p>
+    <div id="favBox"></div>
+    <div id="favPagination" class="pagination hidden"></div>
+  </section>
+</div>
+
+<!-- ================= PANNEAU CLÉS API ================= -->
+<div id="apiPanel">
+  <div id="apiHead">
+    <span class="lbl">🔑 AGNES API</span>
+    <span style="font-size:.7rem;color:var(--ink2);flex:1" id="apiSummary">Cliquez pour configurer</span>
+    <span style="font:700 .7rem ui-monospace;color:var(--gold)" id="apiChevron">▲</span>
+  </div>
+  <div id="apiBody">
+    <p style="font-size:.75rem;color:var(--ink2);margin-bottom:.5rem">Clés Agnes (une par ligne, format <code>sk-…</code>). Stockées dans votre navigateur.</p>
+    <textarea id="apiInput" placeholder="sk-xxx&#10;sk-yyy" style="min-height:90px;font-family:ui-monospace,monospace;font-size:12px"></textarea>
+    <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
+      <button class="btn btn-gold" id="apiValidate">✓ Valider & tester</button>
+      <button class="btn btn-slate" id="apiClear">Effacer</button>
+    </div>
+    <div id="apiStatus" class="status">Aucune clé configurée</div>
+  </div>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <h3 id="modalTitle"></h3>
+    <p id="modalMsg"></p>
+    <div id="modalFieldWrap" class="hidden">
+      <label class="lab" id="modalFieldLabel"></label>
+      <textarea id="modalFieldInput"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-slate" id="modalCancel">Annuler</button>
+      <button class="btn btn-gold" id="modalOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOAST ================= -->
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   LocalAPI — remplace index.php (PHP + SQLite + cURL)
+   Base locale : IndexedDB · Appels Agnes : fetch direct
+   Mêmes actions, mêmes validations, mêmes messages que le PHP.
+============================================================ */
+const AGNES_BASE = 'https://apihub.agnes-ai.com/v1';
+const AGNES_TEXT_MODEL = 'agnes-3.0-flash';
+const AGNES_TEXT_MODEL_FALLBACK = 'agnes-2.5-flash';
+const AGNES_IMG_MODEL = 'agnes-image-2.5-flash';
+const DEFAULT_STORYBOARD = { slug: 'default_sb', name: 'Storyboard par défaut',
+  items: ['gros plan', 'portrait', 'plan américain', 'contre champ', "ajout d'une personne", 'objet'] };
+const DEFAULT_STYLES=[
+ {
+  "slug": "wes_anderson",
+  "name": "Wes Anderson — cinéma argentique",
+  "prompt": "ROLE: You are a world-class prompt engineer specialized in Wes Anderson's cinematic photography.\nTASK: Convert the given scene description into ONE English image prompt (100–140 words).\nPROMPT STRUCTURE (Agnes-recommended order): Subject → Scene → Style → Lighting → Composition → Quality.\nALWAYS INCLUDE:\n- Style: 35mm Kodak Portra 400 film grain, photorealistic cinematic still, Art Deco × Gaudí geometry.\n- Palette: powder blue, hot pink, mustard yellow, beige, turquoise.\n- Lighting: soft diffused natural light.\n- Composition: perfectly symmetrical centered composition, flat 40mm telephoto perspective.\n- Subject: deadpan expression, meticulously designed pastel costumes.\nCONSTRAINTS:\n- Preserve the SUBJECT of the source description verbatim (identity, pose, clothing). Only restyle.\n- No digital art, no illustration, no 3D render, no anime.\n- Return ONLY the prompt. No quotes, no preamble."
+ },
+ {
+  "slug": "moebius",
+  "name": "Manga — Mœbius (ligne claire)",
+  "prompt": "ROLE: You are a world-class prompt engineer specialized in Jean Giraud \"Mœbius\" comic art.\nTASK: Convert the given scene description into ONE English image prompt (100–140 words).\nPROMPT STRUCTURE (Agnes-recommended order): Subject → Scene → Style → Lighting → Composition → Quality.\nALWAYS INCLUDE:\n- Style: ligne claire (clear line) drawing, European bande dessinée aesthetic, fine confident ink lines, Moebius sci-fi comic art.\n- Palette: muted pastel watercolor (sandy yellows, dusty blues, pale pinks, mineral greens).\n- Composition: surreal vast landscapes, minimalist backgrounds, clean flat color fills, delicate hatching.\n- Lighting: soft even diffuse light, no harsh shadows.\nCONSTRAINTS:\n- Preserve the SUBJECT of the source description verbatim. Only restyle.\n- No photograph, no 3D render, no anime.\n- Return ONLY the prompt. No quotes, no preamble."
+ },
+ {
+  "slug": "akira",
+  "name": "Manga — Akira (Otomo)",
+  "prompt": "ROLE: You are a world-class prompt engineer specialized in Katsuhiro Otomo's \"Akira\" manga.\nTASK: Convert the given scene description into ONE English image prompt (100–140 words).\nPROMPT STRUCTURE (Agnes-recommended order): Subject → Scene → Style → Lighting → Composition → Quality.\nALWAYS INCLUDE:\n- Style: high-contrast black and white ink drawing, Katsuhiro Otomo manga aesthetic, meticulous cross-hatching, screentone textures, sharp angular features.\n- Scene: dense Neo-Tokyo urban detail, dramatic perspective, post-apocalyptic cyberpunk atmosphere.\n- Lighting: hard directional shading, stark black-and-white contrast.\n- Composition: dynamic perspective, detailed backgrounds.\nCONSTRAINTS:\n- Preserve the SUBJECT of the source description verbatim. Only restyle.\n- No photograph, no color, no 3D render.\n- Return ONLY the prompt. No quotes, no preamble."
+ },
+ {
+  "slug": "schiele",
+  "name": "Egon Schiele — expressionnisme (non nu)",
+  "prompt": "ROLE: You are a world-class prompt engineer specialized in Egon Schiele's expressionist painting.\nTASK: Convert the given scene description into ONE English image prompt (100–140 words).\nPROMPT STRUCTURE (Agnes-recommended order): Subject → Scene → Style → Lighting → Composition → Quality.\nALWAYS INCLUDE:\n- Style: expressionist oil painting, Egon Schiele aesthetic, elongated distorted bodies, angular gaunt faces, nervous jagged line work, bold outlines, Vienna Secession era.\n- Palette: sickly pale greens and ochres mixed with muted reds and blacks.\n- Lighting: raw emotional intensity, flat stark background.\n- Composition: stark flat background, bold outlines.\nSTRICT CONSTRAINT: ALL SUBJECTS MUST BE FULLY CLOTHED — NO NUDITY, NO EROTICISM. If the source mentions nudity or partial undress, dress the subject in appropriate early-1900s Vienna clothing.\nCONSTRAINTS:\n- Preserve the SUBJECT of the source description verbatim (identity, pose). Only restyle.\n- No photograph, no 3D render.\n- Return ONLY the prompt. No quotes, no preamble."
+ }
+];
+const SYS={
+ "vision": "You are a professional visual describer. Your output will be used to re-generate the SAME scene in a different art style.\nDescribe ONLY what you see, exhaustively and neutrally. Do NOT stylize, do NOT invent.\nStructure your answer with these sections (headings in French, content in French):\n1. PERSONNES — For EACH person: apparent age, face shape, eyes, nose, lips, skin, hair (color/texture/length), body type, posture, expression. Describe clothing item by item with precise colors and materials.\n2. DÉCOR — Location, architecture, furniture, objects, textures, materials.\n3. ÉCLAIRAGE — Light sources, direction, quality, shadows.\n4. ATMOSPHÈRE — Mood, dominant colors, color palette (give hex approximations if possible).\nRules:\n- If several people are visible, describe each one separately.\n- Do not group people.\n- Be surgical: every detail may be reused verbatim.\n- Length: 180–260 words.",
+ "improveStyle": "You are an expert prompt engineer specialised in ART-STYLE SYSTEM PROMPTS for AI image generation.\nYour job is to IMPROVE A TEMPLATE, not to execute it.\n\nCONTEXT:\nThe input is a SYSTEM PROMPT / TEMPLATE used by a pipeline. This template teaches an AI how to convert ANY user scene into a final image prompt. It is REUSABLE for any subject (portraits, landscapes, objects, animals, architecture, abstract concepts...).\n\nYOUR TASK:\nRewrite the template to make it clearer, more precise, and more effective — while keeping it GENERIC and REUSABLE.\n\nCRITICAL RULES — VIOLATION = FAILURE:\n1. DO NOT execute the template. DO NOT generate a scene. DO NOT invent subjects, characters, landscapes, or objects.\n2. The output MUST remain a reusable TEMPLATE with the same structure (ROLE / TASK / PROMPT STRUCTURE / ALWAYS INCLUDE / CONSTRAINTS or equivalent).\n3. Preserve the original artist / style identity completely. Do NOT change the artist. Do NOT add other artists.\n4. Keep the SAME LANGUAGE as the input (French or English).\n5. You MAY add: precise colour palettes (with hex), technique details, lighting rules, composition rules, quality guards, and a clear instruction to preserve the user's subject verbatim.\n6. Structure the prompt in Agnes-recommended order: Subject → Scene → Style → Lighting → Composition → Quality.\n7. Do NOT add scene-specific words. The template must work whether the user inputs 'a portrait of a woman' or 'a spaceship'.\n8. Output ONLY the rewritten template. No preamble. No explanation. No quotation marks. No markdown fences.",
+ "improveStoryboard": "You are an expert list-generator AI.\n\nThe user will describe the KIND of list they want. Produce EXACTLY that kind of list.\n\nEXAMPLES:\n- 'liste de 100 types de mode avec designers croisés avec photographes' → 'Chanel photographié par Yann Arthus-Bertrand', 'Dior photographié par Annie Leibovitz', etc.\n- 'liste de fruits' → 'pomme', 'banane', 'kiwi', etc.\n- 'liste pour pack storyboard' → 'gros plan', 'contre champ', 'plongée', etc.\n- 'liste de sports' → 'football', 'tennis', 'escrime', etc.\n- 'liste d'idées de scènes cyberpunk' → idées de scènes.\n\nRULES:\n- Read the user's request carefully. Do NOT assume it is a storyboard list.\n- Produce items that match EXACTLY what the user asks for.\n- One item per line. No bullets, no numbering, no quotes, no preamble.\n- Each item must be short (max 120 characters), self-contained, usable as-is.\n- Produce between 8 and 40 items.\n- Reply in the SAME LANGUAGE as the user's request.\n- If the user asks for a cross-product (e.g. brands × photographers), produce the cross-product as separate lines.\n- Only produce storyboard shot types (gros plan, contre champ, etc.) IF the user explicitly asks for a storyboard.\n\nOUTPUT FORMAT (strict):\nOne item per line. Nothing else."
+};
+
+
+const LocalAPI = (() => {
+  const DB_NAME = 'artforge_db', DB_VER = 1;
+  const SESSION_KEY = 'artforge_session', OFFSET_KEY = 'artforge_key_offset';
+  const E = (msg, status = 500) => Object.assign(new Error(msg), { status });
+  const sleepMs = ms => new Promise(r => setTimeout(r, ms));
+  const nowStr = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
+  const objUrlToId = new Map(), idToObjUrl = new Map();
+  let _db = null;
+
+  /* ---------- IndexedDB ---------- */
+  function openDB() {
+    if (_db) return Promise.resolve(_db);
+    return new Promise((res, rej) => {
+      if (!window.indexedDB) return rej(new Error('IndexedDB indisponible dans ce navigateur'));
+      const rq = indexedDB.open(DB_NAME, DB_VER);
+      rq.onupgradeneeded = () => {
+        const d = rq.result;
+        const mk = (n, idx) => { const s = d.createObjectStore(n, { keyPath: 'id', autoIncrement: true }); (idx || []).forEach(i => s.createIndex(i, i)); };
+        mk('users', ['username']); mk('styles', ['user_id']); mk('storyboards', ['user_id']);
+        mk('generations', ['user_id']); mk('images');
+        d.createObjectStore('favorites', { keyPath: ['user_id', 'generation_id'] }).createIndex('user_id', 'user_id');
+      };
+      rq.onsuccess = () => { _db = rq.result; res(_db); };
+      rq.onerror = () => rej(rq.error || new Error('IndexedDB : ouverture impossible'));
+      rq.onblocked = () => rej(new Error('IndexedDB bloquée par un autre onglet'));
+    });
+  }
+  const rq2p = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  async function store(name, mode) { const d = await openDB(); return d.transaction(name, mode || 'readonly').objectStore(name); }
+  async function getAll(name, idx, val) { const s = await store(name); return rq2p(idx ? s.index(idx).getAll(val) : s.getAll()); }
+  async function getOne(name, key) { const s = await store(name); return rq2p(s.get(key)); }
+  async function putRow(name, obj) { const s = await store(name, 'readwrite'); return rq2p(s.put(obj)); }
+  async function delRow(name, key) { const s = await store(name, 'readwrite'); return rq2p(s.delete(key)); }
+
+  /* ---------- Session ---------- */
+  function session() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
+  function needAuth() { const s = session(); if (!s || !s.user_id) throw E('Non authentifié', 401); return s.user_id; }
+
+  async function hashPin(pin, salt) {
+    const data = new TextEncoder().encode(salt + ':' + pin);
+    if (window.crypto && crypto.subtle) {
+      const b = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+    }
+    let h = 2166136261; for (const x of data) { h ^= x; h = Math.imul(h, 16777619) >>> 0; }
+    return 'f' + h.toString(16);
+  }
+  function randHex(n) { const a = new Uint8Array(n); crypto.getRandomValues(a); return Array.from(a).map(x => x.toString(16).padStart(2, '0')).join(''); }
+
+  /* ---------- Presets (copie des défauts à la 1re connexion) ---------- */
+  async function ensureUserPresets(uid) {
+    if (!(await getAll('styles', 'user_id', uid)).length) {
+      for (const s of DEFAULT_STYLES) await putRow('styles', { user_id: uid, slug: s.slug, name: s.name, prompt: s.prompt, updated_at: nowStr() });
+    }
+    if (!(await getAll('storyboards', 'user_id', uid)).length) {
+      await putRow('storyboards', { user_id: uid, slug: DEFAULT_STORYBOARD.slug, name: DEFAULT_STORYBOARD.name, items: DEFAULT_STORYBOARD.items.slice(), updated_at: nowStr() });
+    }
+  }
+  const makeSlug = name => (name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')) + '_' + randHex(2);
+
+  /* ---------- Clés & Agnes HTTP ---------- */
+  function sanitizeKeys(keys) {
+    const out = [];
+    (Array.isArray(keys) ? keys : []).forEach(k => {
+      if (typeof k !== 'string') return;
+      k = k.trim();
+      if (k.length < 20 || !k.startsWith('sk-')) return;
+      if (!out.includes(k)) out.push(k);
+    });
+    return out;
+  }
+  function keyOffset(n) {
+    if (n <= 0) return 0;
+    let c = 0;
+    try { c = parseInt(localStorage.getItem(OFFSET_KEY) || '0', 10) || 0; localStorage.setItem(OFFSET_KEY, String(c + 1)); } catch (e) {}
+    return c % n;
+  }
+  async function agnesCall(path, payload, apiKey, timeoutSec) {
+    const ctl = new AbortController();
+    const tid = setTimeout(() => ctl.abort(), timeoutSec * 1000);
+    let res, txt;
+    try {
+      res = await fetch(AGNES_BASE + path, {
+        method: 'POST', signal: ctl.signal,
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+        body: JSON.stringify(payload)
+      });
+      txt = await res.text();
+    } catch (e) {
+      throw E(e.name === 'AbortError' ? 'Délai dépassé (' + timeoutSec + 's)' : 'Réseau : ' + e.message, 0);
+    } finally { clearTimeout(tid); }
+    let data = null; try { data = JSON.parse(txt); } catch (e) {}
+    if (res.status >= 400) {
+      const msg = (data && data.error && data.error.message) || txt.slice(0, 250);
+      throw E('Agnes HTTP ' + res.status + ': ' + msg, res.status);
+    }
+    return (data && typeof data === 'object') ? data : {};
+  }
+  async function agnesCallMulti(path, payload, keys, timeout) {
+    const n = keys.length;
+    if (!n) throw E('Aucune clé API disponible');
+    const start = keyOffset(n);
+    const rotated = keys.slice(start).concat(keys.slice(0, start));
+    const models = path.includes('chat/completions') ? [AGNES_TEXT_MODEL, AGNES_TEXT_MODEL_FALLBACK] : [null];
+    let lastErr = null;
+    for (const m of models) for (const key of rotated) for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const p = Object.assign({}, payload); if (m !== null) p.model = m;
+        return await agnesCall(path, p, key, timeout);
+      } catch (e) {
+        lastErr = e;
+        const code = e.status || 0;
+        if (code >= 400 && code < 500 && code !== 429) break;
+        if (attempt === 0) await sleepMs(500);
+      }
+    }
+    throw lastErr || E('Toutes les clés ont échoué');
+  }
+  const chatPayload = (messages, temperature, max_tokens) => ({
+    model: AGNES_TEXT_MODEL, messages, temperature, max_tokens,
+    reasoning_effort: 'none', chat_template_kwargs: { enable_thinking: false }
+  });
+  const stripFences = s => String(s || '').trim().replace(/^```[a-z]*\s*|\s*```$/gi, '');
+
+  /* ---------- Images : stockage local (équivalent downloadImage) ---------- */
+  async function storeImage(url, uid, label) {
+    let blob = null;
+    if (/^data:image\//i.test(url)) {
+      try { blob = await (await fetch(url)).blob(); } catch (e) { throw E('base64 invalide'); }
+      if (!blob || blob.size < 100) throw E('base64 invalide');
+    } else {
+      if (!/^https?:\/\//i.test(url)) throw E('URL invalide');
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        blob = await r.blob();
+        if (blob.size > 25 * 1024 * 1024 || blob.size < 100) blob = null;
+      } catch (e) { blob = null; }
+      if (!blob) return url; // CORS / échec : on garde l'URL distante telle quelle
+    }
+    const id = await putRow('images', { user_id: uid, label: String(label || 'img'), type: blob.type || 'image/png', blob, created_at: nowStr() });
+    const ou = URL.createObjectURL(blob);
+    objUrlToId.set(ou, id); idToObjUrl.set(id, ou);
+    return ou;
+  }
+  async function resolveImage(stored) {
+    const s = String(stored || '');
+    if (!s.startsWith('idb:')) return s;
+    const id = parseInt(s.slice(4), 10);
+    if (idToObjUrl.has(id)) return idToObjUrl.get(id);
+    const row = await getOne('images', id);
+    if (!row || !row.blob) return '';
+    const ou = URL.createObjectURL(row.blob);
+    idToObjUrl.set(id, ou); objUrlToId.set(ou, id);
+    return ou;
+  }
+  const toStoredUrl = u => (objUrlToId.has(u) ? 'idb:' + objUrlToId.get(u) : String(u || ''));
+
+  /* ---------- Actions ---------- */
+  const A = {
+    async login(b) {
+      const user = String(b.username || '').trim(), pin = String(b.pin || '').trim();
+      if (!/^[a-zA-Z0-9_-]{2,32}$/.test(user)) throw E('Pseudo invalide (2-32 car., a-z 0-9 _ -)', 400);
+      if (!/^\d{4}$/.test(pin)) throw E('PIN : 4 chiffres requis', 400);
+      const row = (await getAll('users', 'username', user))[0];
+      let uid;
+      if (row) {
+        if ((await hashPin(pin, row.salt)) !== row.pin_hash) throw E('PIN incorrect', 403);
+        uid = row.id;
+      } else {
+        const salt = randHex(8);
+        uid = await putRow('users', { username: user, salt, pin_hash: await hashPin(pin, salt), created_at: nowStr() });
+      }
+      await ensureUserPresets(uid);
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ user_id: uid, username: user }));
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+      return { ok: true, user, user_id: uid };
+    },
+    async logout() { localStorage.removeItem(SESSION_KEY); return { ok: true }; },
+    async me() { const s = session(); return { user: s ? s.username : null, user_id: s ? s.user_id : null }; },
+
+    async get_styles() {
+      const uid = needAuth(); await ensureUserPresets(uid);
+      const rows = (await getAll('styles', 'user_id', uid)).sort((a, b) => a.id - b.id);
+      return { ok: true, styles: rows.map(r => ({ id: r.id, slug: r.slug, name: r.name, prompt: r.prompt, updated_at: r.updated_at })) };
+    },
+    async save_style(b) {
+      const uid = needAuth();
+      const id = parseInt(b.id || 0, 10) || 0, name = String(b.name || '').trim(), prompt = String(b.prompt || '').trim();
+      if (!name || !prompt) throw E('name et prompt requis', 400);
+      if (id > 0) {
+        const r = await getOne('styles', id);
+        if (r && r.user_id === uid) { r.name = name; r.prompt = prompt; r.updated_at = nowStr(); await putRow('styles', r); }
+      } else await putRow('styles', { user_id: uid, slug: makeSlug(name), name, prompt, updated_at: nowStr() });
+      return { ok: true };
+    },
+    async delete_style(b) {
+      const uid = needAuth(); const id = parseInt(b.id || 0, 10) || 0;
+      const r = await getOne('styles', id); if (r && r.user_id === uid) await delRow('styles', id);
+      return { ok: true };
+    },
+    async improve_style(b) {
+      needAuth();
+      const current = String(b.prompt || '').trim(), keys = sanitizeKeys(b.keys);
+      if (!current || !keys.length) throw E('prompt et keys requis', 400);
+      const userMsg = "=== TEMPLATE À AMÉLIORER (À RÉÉCRIRE, NE PAS EXÉCUTER) ===\n" + current +
+        "\n=== FIN DU TEMPLATE ===\n\n" +
+        "Réécris CE TEMPLATE en conservant son rôle d'instruction générique.\n" +
+        "NE génère AUCUNE scène. NE choisis AUCUN sujet.\n" +
+        "Retourne uniquement le template amélioré, dans la même langue.";
+      const data = await agnesCallMulti('/chat/completions', chatPayload([{ role: 'system', content: SYS.improveStyle }, { role: 'user', content: userMsg }], 0.4, 1200), keys, 120);
+      const out = stripFences(((data.choices || [])[0] || {}).message && data.choices[0].message.content);
+      if (!out) throw E('Réponse IA vide');
+      return { ok: true, prompt: out.trim() };
+    },
+
+    async get_storyboards() {
+      const uid = needAuth(); await ensureUserPresets(uid);
+      const rows = (await getAll('storyboards', 'user_id', uid)).sort((a, b) => a.id - b.id);
+      return { ok: true, storyboards: rows.map(r => ({ id: r.id, slug: r.slug, name: r.name, items: Array.isArray(r.items) ? r.items : [], updated_at: r.updated_at })) };
+    },
+    async save_storyboard(b) {
+      const uid = needAuth();
+      const id = parseInt(b.id || 0, 10) || 0, name = String(b.name || '').trim();
+      if (!name) throw E('name requis', 400);
+      const items = (Array.isArray(b.items) ? b.items : []).map(x => String(x).trim()).filter(x => x !== '');
+      if (id > 0) {
+        const r = await getOne('storyboards', id);
+        if (r && r.user_id === uid) { r.name = name; r.items = items; r.updated_at = nowStr(); await putRow('storyboards', r); }
+      } else await putRow('storyboards', { user_id: uid, slug: makeSlug(name), name, items, updated_at: nowStr() });
+      return { ok: true };
+    },
+    async delete_storyboard(b) {
+      const uid = needAuth(); const id = parseInt(b.id || 0, 10) || 0;
+      const r = await getOne('storyboards', id); if (r && r.user_id === uid) await delRow('storyboards', id);
+      return { ok: true };
+    },
+    async improve_storyboard(b) {
+      needAuth();
+      const theme = String(b.theme || '').trim(), keys = sanitizeKeys(b.keys);
+      if (!theme || !keys.length) throw E('theme et keys requis', 400);
+      const userMsg = "LISTE OU THÈME À AMÉLIORER :\n" + theme +
+        "\n\nRÈGLES STRICTES :\n" +
+        "- Si l'entrée est déjà une liste, NE PAS ajouter d'objets, de vêtements, de lieux ou de détails concrets.\n" +
+        "- Garde chaque élément GÉNÉRIQUE (type de plan / angle caméra uniquement).\n" +
+        "- Corrige l'orthographe, déduplique, et ajoute au maximum 1 ou 2 angles caméra manquants.\n" +
+        "- Un élément par ligne. Pas de puces, pas de numéros, pas de guillemets.";
+      const data = await agnesCallMulti('/chat/completions', chatPayload([{ role: 'system', content: SYS.improveStoryboard }, { role: 'user', content: userMsg }], 0.2, 500), keys, 90);
+      const out = stripFences(data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content);
+      const items = [];
+      out.split(/\r\n|\r|\n/).forEach(ln => {
+        ln = ln.trim().replace(/^[\-\*•\d\.\)]+\s*/, '').replace(/^["' \t]+|["' \t]+$/g, '');
+        if (ln !== '' && Array.from(ln).length <= 80) items.push(ln);
+      });
+      if (!items.length) throw E('Réponse IA vide');
+      return { ok: true, items: items.slice(0, 15) };
+    },
+
+    async analyze(b) {
+      needAuth();
+      const image = String(b.image || ''), keys = sanitizeKeys(b.keys);
+      if (!image || !keys.length) throw E('image et keys requis', 400);
+      if (image.length > 18000000) throw E('Image trop volumineuse', 413);
+      const msgs = [{ role: 'system', content: SYS.vision }, { role: 'user', content: [
+        { type: 'text', text: 'Décris cette image.' }, { type: 'image_url', image_url: { url: image } }] }];
+      try {
+        const data = await agnesCallMulti('/chat/completions', chatPayload(msgs, 0.2, 2000), keys, 240);
+        const txt = String((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').trim();
+        if (!txt) throw E('Réponse vide');
+        return { ok: true, content: txt };
+      } catch (e) { throw E('Analyse échouée : ' + e.message); }
+    },
+    async generate_prompt(b) {
+      needAuth();
+      const system = String(b.system || '').trim(), userMsg = String(b.user || '').trim(), keys = sanitizeKeys(b.keys);
+      const maxTok = Math.max(80, Math.min(2000, parseInt(b.max_tokens || 500, 10) || 500));
+      let temp = parseFloat(b.temperature); if (isNaN(temp)) temp = 0.75; temp = Math.max(0, Math.min(1.5, temp));
+      if (!system || !userMsg || !keys.length) throw E('system, user et keys requis', 400);
+      try {
+        const data = await agnesCallMulti('/chat/completions', chatPayload([{ role: 'system', content: system }, { role: 'user', content: userMsg }], temp, maxTok), keys, 120);
+        let out = stripFences(data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content);
+        out = out.replace(/^["' \n\r\t]+|["' \n\r\t]+$/g, '');
+        if (!out) throw E('Réponse vide');
+        return { ok: true, content: out };
+      } catch (e) { throw E('Prompt échoué : ' + e.message); }
+    },
+    async generate_image(b) {
+      const uid = needAuth();
+      const prompt = String(b.prompt || '').trim(), keys = sanitizeKeys(b.keys), label = String(b.label || 'img');
+      let size = String(b.size || '2K'), ratio = String(b.ratio || '9:16');
+      if (!prompt || !keys.length) throw E('prompt et keys requis', 400);
+      if (prompt.length > 20000) throw E('Prompt trop long', 413);
+      if (!['1K', '2K', '3K', '4K'].includes(size)) size = '2K';
+      if (!['1:1', '3:4', '4:3', '16:9', '9:16', '2:3', '3:2', '21:9'].includes(ratio)) ratio = '9:16';
+      const payload = { model: AGNES_IMG_MODEL, prompt: Array.from(prompt).slice(0, 5000).join(''), size, ratio, extra_body: { response_format: 'url' } };
+      try {
+        const data = await agnesCallMulti('/images/generations', payload, keys, 240);
+        const d0 = (data.data || [])[0] || {};
+        let url = d0.url || null;
+        if (!url && d0.b64_json) url = 'data:image/png;base64,' + d0.b64_json;
+        if (!url) throw E("Pas d'URL dans la réponse");
+        const local = await storeImage(url, uid, label);
+        return { ok: true, url: local, remote: url };
+      } catch (e) { throw E('Image échouée : ' + e.message); }
+    },
+
+    async log_generation(b) {
+      const uid = needAuth();
+      const id = await putRow('generations', {
+        user_id: uid, style_slug: String(b.style_slug || ''), user_input: String(b.user_input || ''),
+        used_image: parseInt(b.used_image || 0, 10) || 0, vision_desc: String(b.vision_desc || ''),
+        final_prompt: String(b.final_prompt || ''), image_url: toStoredUrl(b.image_url),
+        parent_id: (b.parent_id !== undefined && b.parent_id !== null) ? (parseInt(b.parent_id, 10) || 0) : null,
+        created_at: nowStr()
+      });
+      return { ok: true, id };
+    },
+    async history(b) {
+      const uid = needAuth();
+      const page = Math.max(1, parseInt(b.page || 1, 10) || 1);
+      const perPage = Math.max(1, Math.min(60, parseInt(b.per_page || 30, 10) || 30));
+      const onlyFav = parseInt(b.favorites_only || 0, 10) === 1;
+      const favs = new Set((await getAll('favorites', 'user_id', uid)).map(f => f.generation_id));
+      let rows = (await getAll('generations', 'user_id', uid)).sort((a, b2) => b2.id - a.id);
+      if (onlyFav) rows = rows.filter(r => favs.has(r.id));
+      const total = rows.length, offset = (page - 1) * perPage;
+      const items = [];
+      for (const g of rows.slice(offset, offset + perPage)) items.push({
+        id: g.id, style_slug: g.style_slug, user_input: g.user_input, used_image: g.used_image, final_prompt: g.final_prompt,
+        image_url: await resolveImage(g.image_url), parent_id: g.parent_id, created_at: g.created_at, is_favorite: favs.has(g.id) ? 1 : 0 });
+      return { ok: true, items, total, page, per_page: perPage, favorites_only: onlyFav ? 1 : 0 };
+    },
+    async toggle_favorite(b) {
+      const uid = needAuth(); const gid = parseInt(b.generation_id || 0, 10) || 0;
+      if (gid <= 0) throw E('generation_id requis', 400);
+      const g = await getOne('generations', gid);
+      if (!g || g.user_id !== uid) throw E('Génération introuvable', 404);
+      const ex = await getOne('favorites', [uid, gid]);
+      if (ex) { await delRow('favorites', [uid, gid]); return { ok: true, is_favorite: 0 }; }
+      await putRow('favorites', { user_id: uid, generation_id: gid, created_at: nowStr(), created_ms: Date.now() });
+      return { ok: true, is_favorite: 1 };
+    },
+    async get_favorites(b) {
+      const uid = needAuth();
+      const page = Math.max(1, parseInt(b.page || 1, 10) || 1);
+      const perPage = Math.max(1, Math.min(60, parseInt(b.per_page || 30, 10) || 30));
+      const favs = (await getAll('favorites', 'user_id', uid)).sort((a, b2) => (b2.created_ms || 0) - (a.created_ms || 0));
+      const offset = (page - 1) * perPage, items = [];
+      for (const f of favs.slice(offset, offset + perPage)) {
+        const g = await getOne('generations', f.generation_id);
+        if (!g || g.user_id !== uid) continue;
+        items.push({ id: g.id, style_slug: g.style_slug, user_input: g.user_input, used_image: g.used_image, final_prompt: g.final_prompt,
+          image_url: await resolveImage(g.image_url), parent_id: g.parent_id, created_at: g.created_at, is_favorite: 1 });
+      }
+      return { ok: true, items, total: favs.length, page, per_page: perPage };
+    },
+
+    async test_keys(b) {
+      const keys = sanitizeKeys(b.keys).slice(0, 30);
+      if (!keys.length) throw E('Aucune clé valide', 400);
+      const results = await Promise.all(keys.map(async key => {
+        const ctl = new AbortController(), tid = setTimeout(() => ctl.abort(), 20000);
+        let code = 0;
+        try {
+          const r = await fetch(AGNES_BASE + '/chat/completions', { method: 'POST', signal: ctl.signal,
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+            body: JSON.stringify({ model: AGNES_TEXT_MODEL, messages: [{ role: 'user', content: 'ok' }], max_tokens: 1 }) });
+          code = r.status;
+        } catch (e) { code = 0; } finally { clearTimeout(tid); }
+        return { key, ok: (code >= 200 && code < 300) || code === 429, status: code };
+      }));
+      return { ok: true, results };
+    }
+  };
+
+  async function handle(action, params, method) {
+    const fn = A[action];
+    if (!fn) throw E('Action inconnue : ' + action, 404);
+    return fn(params || {});
+  }
+  return { handle, isLogged: () => !!session(), username: () => (session() || {}).username || '' };
+})();
+
+window.ARTFORGE = { ajaxUrl: 'local', isLogged: LocalAPI.isLogged(), username: LocalAPI.username() };
+
+</script>
+<script>
+'use strict';
+
+/* ============================================================
+   ArtForge v5 — js.js
+   Config lue depuis window.ARTFORGE (défini par LocalAPI)
+============================================================ */
+
+const CFG = {
+  ajaxUrl: (window.ARTFORGE && window.ARTFORGE.ajaxUrl) || 'local',
+  lsKeys:  'artforge_keys_v2',
+  lsFavFilter: 'artforge_fav_filter'
+};
+
+const $  = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+let apiKeys = [];
+let STYLES = [];
+let STORYBOARDS = [];
+let currentImage = null;
+let LOGGED = (window.ARTFORGE && window.ARTFORGE.isLogged) || false;
+let CURRENT_USER = (window.ARTFORGE && window.ARTFORGE.username) || '';
+
+const PIPE = {
+  running: false, paused: false, stopped: false,
+  total: 0, done: 0, failed: 0, active: 0, abort: false,
+};
+
+/* ============================================================
+   UTILS
+============================================================ */
+function toast(msg, type='') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'on ' + type;
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.className = type, 3500);
+}
+
+function compressImage(dataUrl, maxSide=1400) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      let {width:w, height:h} = img;
+      const s = Math.min(1, maxSide / Math.max(w,h));
+      w = Math.round(w*s); h = Math.round(h*s);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      res(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+/* ============================================================
+   MODAL CUSTOM
+============================================================ */
+function showModal({title, message='', fieldLabel='', fieldValue='', fieldType='textarea', okText='OK', cancelText='Annuler', showCancel=true}) {
+  return new Promise(resolve => {
+    const overlay = $('modalOverlay');
+    $('modalTitle').textContent = title;
+    $('modalMsg').textContent = message;
+    $('modalMsg').style.display = message ? '' : 'none';
+    const fieldWrap = $('modalFieldWrap');
+    const input = $('modalFieldInput');
+    if (fieldLabel) {
+      fieldWrap.classList.remove('hidden');
+      $('modalFieldLabel').textContent = fieldLabel;
+      input.value = fieldValue;
+      if (fieldType === 'text') {
+        input.style.minHeight = '42px';
+        input.style.height = '42px';
+      } else {
+        input.style.minHeight = '88px';
+        input.style.height = '';
+      }
+    } else {
+      fieldWrap.classList.add('hidden');
+      input.value = '';
+    }
+    $('modalOk').textContent = okText;
+    $('modalCancel').textContent = cancelText;
+    $('modalCancel').classList.toggle('hidden', !showCancel);
+    overlay.classList.add('on');
+
+    const close = (val) => {
+      overlay.classList.remove('on');
+      $('modalOk').removeEventListener('click', onOk);
+      $('modalCancel').removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onOverlay);
+      document.removeEventListener('keydown', onKey);
+      resolve(val);
+    };
+    const onOk = () => close(fieldLabel ? input.value.trim() : true);
+    const onCancel = () => close(null);
+    const onOverlay = e => { if (e.target === overlay) close(null); };
+    const onKey = e => {
+      if (e.key === 'Escape') close(null);
+      if (e.key === 'Enter' && fieldType === 'text' && fieldLabel) { e.preventDefault(); onOk(); }
+    };
+    $('modalOk').addEventListener('click', onOk);
+    $('modalCancel').addEventListener('click', onCancel);
+    overlay.addEventListener('click', onOverlay);
+    document.addEventListener('keydown', onKey);
+    setTimeout(() => input.focus(), 80);
+  });
+}
+
+/* ============================================================
+   BACKEND
+============================================================ */
+const Backend = {
+  async call(action, params = {}, method = 'POST') {
+    try { return await LocalAPI.handle(action, params, method); }
+    catch (e) {
+      if (e && e.status === 401) { location.reload(); throw new Error('Session expirée'); }
+      throw (e instanceof Error ? e : new Error(String(e)));
+    }
+  },
+
+  login(u, p)            { return this.call('login', {username:u, pin:p}); },
+  logout()               { return this.call('logout', {}); },
+  me()                   { return this.call('me', {}, 'GET'); },
+  getStyles()            { return this.call('get_styles', {}, 'GET'); },
+  saveStyle(id,name,prompt) { return this.call('save_style', {id,name,prompt}); },
+  deleteStyle(id)        { return this.call('delete_style', {id}); },
+  improveStyle(prompt,keys) { return this.call('improve_style', {prompt, keys}); },
+  getStoryboards()       { return this.call('get_storyboards', {}, 'GET'); },
+  saveStoryboard(id,name,items) { return this.call('save_storyboard', {id,name,items}); },
+  deleteStoryboard(id)   { return this.call('delete_storyboard', {id}); },
+  improveStoryboard(theme,keys) { return this.call('improve_storyboard', {theme, keys}); },
+  analyze(image, keys)   { return this.call('analyze', {image, keys}); },
+  generatePrompt(system,user,keys,max=500,temp=0.75) {
+    return this.call('generate_prompt', {system, user, keys, max_tokens:max, temperature:temp});
+  },
+  generateImage(prompt, keys, label='img', size='2K', ratio='9:16') {
+    return this.call('generate_image', {prompt, keys, label, size, ratio});
+  },
+  logGeneration(d)       { return this.call('log_generation', d); },
+  history(page=1, perPage=30, favOnly=false) {
+    return this.call('history', {page, per_page: perPage, favorites_only: favOnly ? 1 : 0}, 'GET');
+  },
+  getFavorites(page=1, perPage=30) { return this.call('get_favorites', {page, per_page: perPage}, 'GET'); },
+  toggleFavorite(genId)  { return this.call('toggle_favorite', {generation_id: genId}); },
+  testKeys(keys)         { return this.call('test_keys', {keys}); }
+};
+
+/* ============================================================
+   AUTH
+============================================================ */
+async function doLogin() {
+  const u = $('loginUser').value.trim();
+  const p = $('loginPin').value.trim();
+  const status = $('loginStatus');
+  if (!u || !/^\d{4}$/.test(p)) {
+    status.className = 'status err';
+    status.textContent = 'Pseudo + PIN 4 chiffres requis';
+    return;
+  }
+  const btn = $('loginBtn');
+  btn.disabled = true; btn.textContent = '⏳ Connexion…';
+  status.className = 'status'; status.textContent = 'Connexion…';
+  try {
+    const r = await Backend.login(u, p);
+    CURRENT_USER = r.user;
+    LOGGED = true;
+    $('loginBox').classList.add('hidden');
+    $('main').classList.remove('hidden');
+    $('logoutBtn').classList.remove('hidden');
+    $('globalStat').innerHTML = 'Connecté : <b>' + esc(CURRENT_USER) + '</b>';
+    await bootApp();
+    toast('Bienvenue ' + CURRENT_USER, 'ok');
+  } catch (e) {
+    status.className = 'status err';
+    status.textContent = '❌ ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Se connecter / Créer un compte';
+  }
+}
+
+async function doLogout() {
+  try { await Backend.logout(); } catch(e) {}
+  location.reload();
+}
+
+/* ============================================================
+   API KEYS
+============================================================ */
+function updateApiTag() {
+  const tag = $('modeTag');
+  const stat = $('globalStat');
+  if (apiKeys.length) {
+    tag.textContent = 'LIVE · ' + apiKeys.length;
+    tag.className = 'mode live';
+    stat.innerHTML = '<b>' + apiKeys.length + '</b> clé(s) prête(s)';
+    $('apiSummary').textContent = apiKeys.length + ' clé(s)';
+  } else {
+    tag.textContent = 'NON CONFIGURÉ';
+    tag.className = 'mode';
+    stat.textContent = 'Ajoutez vos clés API pour commencer';
+    $('apiSummary').textContent = 'Cliquez pour configurer';
+  }
+}
+
+async function validateKeys() {
+  const raw = $('apiInput').value.split('\n').map(l => l.trim()).filter(l => l.startsWith('sk-'));
+  const status = $('apiStatus');
+  if (!raw.length) { status.className='status err'; status.textContent='Aucune clé valide'; return; }
+  status.className = 'status'; status.textContent = '⏳ Test de ' + raw.length + ' clé(s)…';
+  try {
+    const r = await Backend.testKeys(raw);
+    const valid = (r.results || []).filter(x => x.ok).map(x => x.key);
+    if (!valid.length) {
+      status.className = 'status err'; status.textContent = '❌ Aucune clé acceptée';
+      apiKeys = [];
+    } else {
+      apiKeys = valid;
+      try { localStorage.setItem(CFG.lsKeys, JSON.stringify(valid)); } catch(e){}
+      status.className = 'status ok';
+      status.textContent = '✓ ' + valid.length + ' clé(s) validée(s)';
+      toast(valid.length + ' clé(s) validée(s)', 'ok');
+    }
+    updateApiTag();
+  } catch (e) {
+    status.className = 'status err'; status.textContent = '❌ ' + e.message;
+  }
+}
+
+/* ============================================================
+   STYLES
+============================================================ */
+async function loadStyles() {
+  try {
+    const r = await Backend.getStyles();
+    STYLES = r.styles || [];
+    $('styleSelect').innerHTML = STYLES.map(s =>
+      `<option value="${esc(s.slug)}">${esc(s.name)}</option>`
+    ).join('');
+    renderStyleEditors();
+  } catch (e) {
+    toast('Chargement styles : ' + e.message, 'err');
+  }
+}
+
+function renderStyleEditors() {
+  const box = $('styleEditors');
+  box.innerHTML = STYLES.map(s => `
+    <div class="style-editor" data-id="${s.id}">
+      <h4>
+        <input type="text" class="style-name" value="${esc(s.name)}" style="min-height:0;padding:.4rem .6rem;font-size:.9rem;font-weight:600">
+        <span class="slug">${esc(s.slug)}</span>
+        <button class="btn-mini btn-red" data-del style="margin-left:auto">🗑</button>
+      </h4>
+      <textarea class="style-prompt">${esc(s.prompt)}</textarea>
+      <div class="actions">
+        <button class="btn-mini" data-save>💾 Sauvegarder</button>
+        <button class="btn-mini" data-improve>✨ IA améliore</button>
+        <span class="status" data-status style="margin:0;padding:.3rem .6rem;font-size:.68rem;display:none"></span>
+      </div>
+    </div>
+  `).join('');
+
+  box.querySelectorAll('.style-editor').forEach(el => {
+    const id = parseInt(el.dataset.id, 10);
+    const nameEl = el.querySelector('.style-name');
+    const promptEl = el.querySelector('.style-prompt');
+    const statusEl = el.querySelector('[data-status]');
+
+    el.querySelector('[data-save]').addEventListener('click', async () => {
+      try {
+        await Backend.saveStyle(id, nameEl.value.trim(), promptEl.value.trim());
+        toast('Style sauvegardé', 'ok');
+        await loadStyles();
+      } catch(e) { toast('Sauvegarde : ' + e.message, 'err'); }
+    });
+
+    el.querySelector('[data-improve]').addEventListener('click', async (ev) => {
+      if (!apiKeys.length) { toast('Configurez vos clés API', 'err'); return; }
+      const btn = ev.currentTarget;
+      btn.disabled = true; btn.textContent = '⏳…';
+      try {
+        const r = await Backend.improveStyle(promptEl.value.trim(), apiKeys);
+        promptEl.value = r.prompt;
+        statusEl.style.display = 'inline-block';
+        statusEl.className = 'status warn';
+        statusEl.textContent = '✨ Amélioré — Sauvegarder';
+      } catch(e) { toast('IA : ' + e.message, 'err'); }
+      finally { btn.disabled = false; btn.textContent = '✨ IA améliore'; }
+    });
+
+    el.querySelector('[data-del]').addEventListener('click', async () => {
+      const ok = await showModal({
+        title: 'Supprimer ce style ?',
+        message: 'Cette action est irréversible.',
+        okText: 'Supprimer',
+        cancelText: 'Annuler',
+      });
+      if (!ok) return;
+      try {
+        await Backend.deleteStyle(id);
+        toast('Style supprimé', 'ok');
+        await loadStyles();
+      } catch(e) { toast('Suppression : ' + e.message, 'err'); }
+    });
+  });
+}
+
+/* ============================================================
+   STORYBOARDS
+============================================================ */
+async function loadStoryboards() {
+  try {
+    const r = await Backend.getStoryboards();
+    STORYBOARDS = r.storyboards || [];
+    $('storyboardSelect').innerHTML = STORYBOARDS.map(s =>
+      `<option value="${esc(s.slug)}">${esc(s.name)} (${(s.items||[]).length})</option>`
+    ).join('');
+    renderSbEditors();
+    updateSbHint();
+  } catch (e) {
+    toast('Chargement storyboards : ' + e.message, 'err');
+  }
+}
+
+function updateSbHint() {
+  const slug = $('storyboardSelect').value;
+  const sb = STORYBOARDS.find(s => s.slug === slug);
+  if (sb) {
+    $('sbHint').textContent = (sb.items||[]).length + ' éléments · ' + (sb.name || '');
+  } else {
+    $('sbHint').textContent = '— aucune liste sélectionnée';
+  }
+}
+
+function renderSbEditors() {
+  const box = $('sbEditors');
+  box.innerHTML = STORYBOARDS.map(s => `
+    <div class="sb-editor" data-id="${s.id}">
+      <h4>
+        <input type="text" class="sb-name" value="${esc(s.name)}" style="min-height:0;padding:.4rem .6rem;font-size:.9rem;font-weight:600">
+        <span class="slug">${esc(s.slug)}</span>
+        <button class="btn-mini btn-red" data-del style="margin-left:auto">🗑</button>
+      </h4>
+      <label class="lab" style="margin-top:.3rem">Éléments (un par ligne)</label>
+      <textarea class="items-area sb-items">${esc((s.items||[]).join('\n'))}</textarea>
+      <div class="actions">
+        <button class="btn-mini" data-save>💾 Sauvegarder</button>
+        <button class="btn-mini" data-improve>✨ IA améliore</button>
+        <span class="status" data-status style="margin:0;padding:.3rem .6rem;font-size:.68rem;display:none"></span>
+      </div>
+    </div>
+  `).join('');
+
+  box.querySelectorAll('.sb-editor').forEach(el => {
+    const id = parseInt(el.dataset.id, 10);
+    const nameEl = el.querySelector('.sb-name');
+    const itemsEl = el.querySelector('.sb-items');
+    const statusEl = el.querySelector('[data-status]');
+
+    el.querySelector('[data-save]').addEventListener('click', async () => {
+      const items = itemsEl.value.split('\n').map(l => l.trim()).filter(l => l !== '');
+      try {
+        await Backend.saveStoryboard(id, nameEl.value.trim(), items);
+        toast('Liste sauvegardée', 'ok');
+        await loadStoryboards();
+      } catch(e) { toast('Sauvegarde : ' + e.message, 'err'); }
+    });
+
+    el.querySelector('[data-improve]').addEventListener('click', async (ev) => {
+      if (!apiKeys.length) { toast('Configurez vos clés API', 'err'); return; }
+      const btn = ev.currentTarget;
+      btn.disabled = true; btn.textContent = '⏳…';
+      try {
+        const theme = itemsEl.value.trim() || nameEl.value.trim();
+        const r = await Backend.improveStoryboard(theme, apiKeys);
+        itemsEl.value = (r.items || []).join('\n');
+        statusEl.style.display = 'inline-block';
+        statusEl.className = 'status warn';
+        statusEl.textContent = '✨ Liste générée — Sauvegarder';
+      } catch(e) { toast('IA : ' + e.message, 'err'); }
+      finally { btn.disabled = false; btn.textContent = '✨ IA améliore'; }
+    });
+
+    el.querySelector('[data-del]').addEventListener('click', async () => {
+      const ok = await showModal({
+        title: 'Supprimer cette liste ?',
+        message: 'Cette action est irréversible.',
+        okText: 'Supprimer',
+        cancelText: 'Annuler',
+      });
+      if (!ok) return;
+      try {
+        await Backend.deleteStoryboard(id);
+        toast('Liste supprimée', 'ok');
+        await loadStoryboards();
+      } catch(e) { toast('Suppression : ' + e.message, 'err'); }
+    });
+  });
+}
+
+/* ============================================================
+   IMAGE UPLOAD
+============================================================ */
+async function handleImage(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const dataUrl = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+  currentImage = await compressImage(dataUrl);
+  renderPreview();
+}
+
+function renderPreview() {
+  const w = $('imagePreviewWrap');
+  if (!currentImage) { w.innerHTML = ''; return; }
+  w.innerHTML = `<div class="preview"><img src="${currentImage}" alt=""><button class="rm" id="rmImage">✕</button></div>`;
+  $('rmImage').addEventListener('click', () => { currentImage = null; renderPreview(); });
+}
+
+/* ============================================================
+   FAVORIS
+============================================================ */
+async function toggleFavorite(genId, btnEl) {
+  if (!genId) { toast('ID image manquant', 'err'); return; }
+  btnEl.disabled = true;
+  try {
+    const r = await Backend.toggleFavorite(genId);
+    if (r.is_favorite) {
+      btnEl.classList.add('active');
+      btnEl.textContent = '★';
+      toast('Ajouté aux favoris', 'ok');
+    } else {
+      btnEl.classList.remove('active');
+      btnEl.textContent = '☆';
+      toast('Retiré des favoris', 'info');
+    }
+  } catch (e) {
+    toast('Favori : ' + e.message, 'err');
+  } finally {
+    btnEl.disabled = false;
+  }
+}
+
+/* ============================================================
+   PIPELINE
+============================================================ */
+function addStep(label, icon) {
+  const box = $('stepsBox');
+  box.classList.remove('hidden');
+  const el = document.createElement('div');
+  el.className = 'step running';
+  el.innerHTML = `<span class="ico">${icon}</span><span class="msg"><span class="spinner"></span> ${esc(label)}</span>`;
+  box.appendChild(el);
+  return el;
+}
+function updateStep(el, msg, ok=true) {
+  el.className = 'step ' + (ok ? 'done' : 'error');
+  el.querySelector('.msg').innerHTML = (ok ? '✓ ' : '❌ ') + esc(msg);
+}
+
+function resetPipelineUI() {
+  $('stepsBox').innerHTML = '';
+  $('stepsBox').classList.add('hidden');
+  $('resultsBox').classList.add('hidden');
+  $('resultGrid').innerHTML = '';
+  $('resultsCount').textContent = '0 / 0';
+  $('pipelineCtrl').classList.add('hidden');
+  $('pauseBtn').classList.remove('hidden');
+  $('resumeBtn').classList.add('hidden');
+  $('stopBtn').disabled = false;
+  $('pauseBtn').disabled = false;
+  PIPE.running = false; PIPE.paused = false; PIPE.stopped = false;
+  PIPE.total = 0; PIPE.done = 0; PIPE.failed = 0; PIPE.active = 0; PIPE.abort = false;
+}
+
+function updateCount() {
+  const el = $('resultsCount');
+  let txt = `${PIPE.done} / ${PIPE.total}`;
+  if (PIPE.failed) txt += ` · ${PIPE.failed} err.`;
+  el.textContent = txt;
+}
+
+async function waitIfPaused() {
+  while (PIPE.paused && !PIPE.stopped) await sleep(200);
+}
+
+async function generateOne(prompt, size, ratio, label) {
+  await waitIfPaused();
+  if (PIPE.stopped) throw new Error('Stopped');
+  PIPE.active++;
+  try {
+    const r = await Backend.generateImage(prompt, apiKeys, label, size, ratio);
+    return r.url;
+  } finally {
+    PIPE.active--;
+  }
+}
+
+/* ---------- Carte image (résultats + favoris + historique) ---------- */
+function createImageCard(data) {
+  const card = document.createElement('div');
+  card.className = 'img-card';
+  card._data = data; // référence partagée pour mise à jour genId après log
+
+  const isFav = parseInt(data.is_favorite || 0, 10) === 1;
+  const canFavNow = !!data.genId;
+
+  card.innerHTML = `
+    <button class="fav-btn ${isFav ? 'active' : ''}" data-fav title="Favori" ${canFavNow ? '' : 'disabled'}>${isFav ? '★' : '☆'}</button>
+    <div class="img-wrap">
+      <img src="${esc(data.url)}" alt="" loading="lazy" class="new">
+    </div>
+    <div class="info">
+      <div class="meta">${esc(data.style || '')} · #${(data.index||0) + 1}</div>
+      <textarea class="prompt-edit">${esc(data.prompt)}</textarea>
+      <div class="actions">
+        <button class="btn-mini" data-copy>📋 Copier</button>
+        <button class="btn-mini" data-regen>↻ Régénérer</button>
+        <span class="status" data-msg style="display:none;margin:0;padding:.25rem .5rem;font-size:.65rem"></span>
+      </div>
+    </div>`;
+
+  const ta = card.querySelector('.prompt-edit');
+  const msg = card.querySelector('[data-msg]');
+  const favBtn = card.querySelector('[data-fav]');
+
+  // ⭐ handler unique — lit data.genId mis à jour après logGeneration
+  favBtn.addEventListener('click', () => {
+    if (!data.genId) { toast('Image en cours de sauvegarde, patientez…', 'info'); return; }
+    toggleFavorite(data.genId, favBtn);
+  });
+
+  // Copier
+  card.querySelector('[data-copy]').addEventListener('click', () => {
+    navigator.clipboard.writeText(ta.value)
+      .then(() => toast('Prompt copié', 'ok'))
+      .catch(() => toast('Copie impossible', 'err'));
+  });
+
+  // Régénérer
+  card.querySelector('[data-regen]').addEventListener('click', async (ev) => {
+    const btn = ev.currentTarget;
+    if (btn.disabled) return;
+    if (!apiKeys.length) { toast('Configurez vos clés API', 'err'); return; }
+    btn.disabled = true;
+    msg.style.display = 'inline-block';
+    msg.className = 'status';
+    msg.innerHTML = '<span class="spinner"></span> Régénération…';
+
+    const prompt = ta.value.trim();
+    if (!prompt) { toast('Prompt vide', 'err'); btn.disabled = false; return; }
+    const size = $('sizeSelect').value;
+    const ratio = $('ratioSelect').value;
+
+    try {
+      const r = await Backend.generateImage(prompt, apiKeys, 'regen_' + Date.now(), size, ratio);
+      const imgWrap = card.querySelector('.img-wrap');
+      const oldImgs = imgWrap.querySelectorAll('img');
+      oldImgs.forEach(im => { im.classList.remove('new'); im.classList.add('old'); });
+      const newImg = document.createElement('img');
+      newImg.src = r.url;
+      newImg.className = 'new';
+      newImg.loading = 'lazy';
+      newImg.alt = 'regenerated';
+      imgWrap.appendChild(newImg);
+
+      msg.className = 'status ok';
+      msg.textContent = '✓ Nouvelle image';
+      toast('Image régénérée', 'ok');
+
+      // Nouveau log → nouveau genId pour le favori
+      try {
+        const lr = await Backend.logGeneration({
+          style_slug: data.style,
+          user_input: '',
+          used_image: 0,
+          vision_desc: '',
+          final_prompt: prompt,
+          image_url: r.url,
+          parent_id: data.genId || data.parentId || null,
+        });
+        if (lr && lr.id) {
+          data.genId = lr.id;
+          data.parentId = lr.id;
+          favBtn.disabled = false;
+          favBtn.classList.remove('active');
+          favBtn.textContent = '☆';
+        }
+      } catch (e) {
+        console.warn('logGeneration régén échoué :', e);
+      }
+    } catch (e) {
+      msg.className = 'status err';
+      msg.textContent = '❌ ' + e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  return card;
+}
+
+/* ---------- Construction déterministe du prompt (sans IA optimizer) ---------- */
+function composeDirectPrompt({stylePrompt, userPrompt, visionDesc, bulkItem, variantIndex}) {
+  const parts = [];
+  parts.push('PRIMARY VISUAL STYLE — APPLY THROUGHOUT THE ENTIRE IMAGE:\n' + stylePrompt.trim());
+  if (userPrompt) parts.push('EXACT USER INTENT / SUBJECT — PRESERVE IT:\n' + userPrompt.trim());
+  if (visionDesc) parts.push('SOURCE IMAGE VISUAL DESCRIPTION — USE AS SUBJECT REFERENCE, NOT AS A REQUEST TO COPY TEXT:\n' + visionDesc.trim());
+  if (bulkItem) parts.push(
+    'MANDATORY BULK / STORYBOARD ELEMENT — THIS MUST BE CLEARLY VISIBLE AND DOMINANT IN THIS IMAGE:\n' + bulkItem.trim() +
+    '\nDo not omit, dilute, replace, or merely allude to this element. Make it explicit in the subject, action, framing, and scene where relevant.'
+  );
+  if (variantIndex > 0) parts.push('VARIATION ' + (variantIndex + 1) + ': keep the same subject, style, palette and mandatory storyboard element; vary only secondary composition details.');
+  parts.push('STYLE PRIORITY: the named style rules above govern the whole image, including subject rendering, materials, costume, architecture, color palette, lighting, camera, composition and background. Do not fall back to a generic aesthetic.');
+  parts.push('IMAGE QUALITY: coherent composition, precise details, intentional lighting, no text, no watermark.');
+  return parts.filter(Boolean).join('\n\n');
+}
+
+function buildOptimizerRequest({stylePrompt, userPrompt, visionDesc, bulkItem, variantIndex}) {
+  const chunks = [];
+  chunks.push('STYLE PROMPT — HIGHEST PRIORITY; preserve and apply every distinctive rule:\n' + stylePrompt.trim());
+  if (userPrompt) chunks.push('USER SUBJECT / INTENT — do not replace it:\n' + userPrompt.trim());
+  if (visionDesc) chunks.push('IMAGE-TO-TEXT SOURCE ANALYSIS — preserve the recognizable subject and important visual attributes:\n' + visionDesc.trim());
+  if (bulkItem) chunks.push('MANDATORY BULK ITEM — MUST BE EXPLICITLY REPRESENTED, not treated as optional inspiration:\n' + bulkItem.trim());
+  if (variantIndex > 0) chunks.push('Variation number ' + (variantIndex + 1) + ': preserve style, subject and mandatory bulk item; vary only secondary details.');
+  chunks.push('Write one complete English image-generation prompt. Integrate the style throughout the entire prompt, not as a weak suffix. Preserve the user subject. The bulk item is a hard constraint and must be unmistakably visible. Include concrete subject, scene, materials, palette, lighting, camera/framing and composition. Resolve conflicts in this order: user subject, mandatory bulk item, distinctive style rules, secondary embellishment. Do not explain your work; return only the final prompt.');
+  return chunks.join('\n\n');
+}
+
+/* ---------- Lancement principal : chaque prompt alimente immédiatement la file image ---------- */
+async function generate() {
+  const styleSlug = $('styleSelect').value;
+  const style = STYLES.find(s => s.slug === styleSlug);
+  const userPrompt = $('promptInput').value.trim();
+  const hasImage = !!currentImage;
+  const optimizeWithAI = !!$('aiOptimizerCheck')?.checked;
+  if (!style) { toast('Style invalide', 'err'); return; }
+  if (!apiKeys.length) { toast('Configurez vos clés API', 'err'); return; }
+  if (!hasImage && !userPrompt) { toast('Fournissez une image OU un prompt', 'err'); return; }
+
+  const size = $('sizeSelect').value;
+  const ratio = $('ratioSelect').value;
+  const countPerElement = Math.max(1, Math.min(10, parseInt($('countInput').value || '1', 10)));
+  const concurrency = Math.max(1, Math.min(10, parseInt($('concurrencySelect').value || '2', 10)));
+  const useStoryboard = $('storyboardCheck').checked;
+
+  let sbItems = [];
+  if (useStoryboard) {
+    const sbSlug = $('storyboardSelect').value;
+    const sb = STORYBOARDS.find(s => s.slug === sbSlug);
+    if (!sb || !(sb.items || []).length) {
+      toast('Storyboard vide ou introuvable', 'err');
+      return;
+    }
+    sbItems = sb.items.map(x => String(x).trim()).filter(Boolean);
+    if (!sbItems.length) { toast('La liste bulk ne contient aucun élément exploitable.', 'err'); return; }
+  } else {
+    sbItems = [''];
+  }
+
+  const totalImages = countPerElement * sbItems.length;
+  resetPipelineUI();
+  PIPE.running = true;
+  PIPE.paused = false;
+  PIPE.stopped = false;
+  PIPE.abort = false;
+  PIPE.total = totalImages;
+  PIPE.done = 0;
+  PIPE.failed = 0;
+  PIPE.active = 0;
+  $('generateBtn').disabled = true;
+  $('generateBtn').textContent = optimizeWithAI ? '⏳ Optimisation + images…' : '⏳ Génération directe…';
+  $('pipelineCtrl').classList.remove('hidden');
+  $('resultsBox').classList.remove('hidden');
+  updateCount();
+
+  const grid = $('resultGrid');
+  const queue = [];
+  let producerDone = false;
+  let nextImageIndex = 0;
+  let visionDesc = '';
+  let promptCount = 0;
+  const imageWorkers = Array.from({length: concurrency}, async () => {
+    while (true) {
+      await waitIfPaused();
+      if (PIPE.stopped || PIPE.abort) return;
+      if (!queue.length) {
+        if (producerDone) return;
+        await sleep(100);
+        continue;
+      }
+      const t = queue.shift();
+      if (!t) continue;
+      try {
+        const label = 'artforge_' + (t.styleSlug || 'x') + '_' + t.index + (t.sbItem ? '_' + t.sbItem.slice(0, 18).replace(/[^a-z0-9_-]/gi, '_') : '');
+        const url = await generateOne(t.promptFinal, size, ratio, label);
+        PIPE.done++;
+        updateCount();
+        const card = createImageCard({
+          prompt: t.promptFinal,
+          url,
+          style: t.sbItem ? (t.styleSlug + ' · ' + t.sbItem) : t.styleSlug,
+          index: t.index,
+          parentId: null,
+          genId: null,
+          is_favorite: 0,
+        });
+        grid.appendChild(card);
+        Backend.logGeneration({
+          style_slug: t.styleSlug,
+          user_input: t.userPrompt,
+          used_image: t.hasImage ? 1 : 0,
+          vision_desc: t.visionDesc,
+          final_prompt: t.promptFinal,
+          image_url: url,
+          parent_id: null,
+        }).then(r => {
+          if (r && r.id) {
+            card._data.genId = r.id;
+            const favBtn = card.querySelector('[data-fav]');
+            if (favBtn) favBtn.disabled = false;
+          }
+        }).catch(e => {
+          console.warn('logGeneration échoué :', e);
+          const favBtn = card.querySelector('[data-fav]');
+          if (favBtn) favBtn.disabled = false;
+        });
+      } catch (e) {
+        PIPE.failed++;
+        updateCount();
+        const errCard = document.createElement('div');
+        errCard.className = 'img-card';
+        errCard.innerHTML = `<div class="img-wrap"><div style="padding:1rem;color:var(--red);font-size:.8rem">❌ ${esc(e.message)}</div></div><div class="meta">${esc(t.sbItem || 'Génération directe')}</div><textarea class="prompt-edit" readonly>${esc(t.promptFinal)}</textarea>`;
+        grid.appendChild(errCard);
+      }
+    }
+  });
+
+  try {
+    /* L'analyse image→texte est nécessaire uniquement lorsqu'une image source est fournie.
+       Aucune requête image→image n'est faite : la sortie reste toujours texte→image. */
+    if (hasImage) {
+      const s = addStep('Analyse de l’image source → texte…', '🔍');
+      try {
+        const r = await Backend.analyze(currentImage, apiKeys);
+        visionDesc = String(r.content || '').trim();
+        if (!visionDesc) throw new Error('L’analyse n’a renvoyé aucune description.');
+        updateStep(s, 'Analyse terminée (' + visionDesc.length + ' caractères).');
+      } catch (e) {
+        updateStep(s, 'Analyse échouée : ' + e.message, false);
+        throw e;
+      }
+    }
+
+    const producerStep = addStep(optimizeWithAI
+      ? 'Optimisation des prompts puis lancement immédiat des images…'
+      : 'Construction directe des prompts puis lancement immédiat des images…', '✍️');
+
+    for (let itemIndex = 0; itemIndex < sbItems.length; itemIndex++) {
+      await waitIfPaused();
+      if (PIPE.stopped || PIPE.abort) break;
+      const item = sbItems[itemIndex];
+      for (let variant = 0; variant < countPerElement; variant++) {
+        await waitIfPaused();
+        if (PIPE.stopped || PIPE.abort) break;
+        let finalPrompt;
+        if (optimizeWithAI) {
+          const userMsg = buildOptimizerRequest({
+            stylePrompt: style.prompt,
+            userPrompt,
+            visionDesc,
+            bulkItem: item,
+            variantIndex: variant,
+          });
+          const r = await Backend.generatePrompt(
+            'You are an expert image-prompt engineer. Follow all user constraints literally. The style and mandatory bulk item must be strongly visible in the final image prompt. Return only the final English prompt.',
+            userMsg,
+            apiKeys,
+            900,
+            item ? 0.35 : 0.55
+          );
+          finalPrompt = String(r.content || '').trim();
+          if (!finalPrompt) throw new Error('L’optimiseur IA a renvoyé un prompt vide.');
+        } else {
+          finalPrompt = composeDirectPrompt({
+            stylePrompt: style.prompt,
+            userPrompt,
+            visionDesc,
+            bulkItem: item,
+            variantIndex: variant,
+          });
+        }
+
+        promptCount++;
+        const idx = nextImageIndex++;
+        // Point essentiel : dès que CE prompt existe, il entre dans la file image.
+        // Le producteur peut préparer l’élément bulk suivant pendant que les workers génèrent.
+        queue.push({
+          index: idx,
+          promptFinal: finalPrompt,
+          sbItem: item,
+          styleSlug,
+          userPrompt,
+          hasImage,
+          visionDesc,
+        });
+        updateStep(producerStep, `${promptCount}/${totalImages} prompt(s) prêt(s) — ${PIPE.done} image(s) terminée(s).`);
+      }
+    }
+    updateStep(producerStep, `${promptCount} prompt(s) créé(s). Les images déjà lancées continuent.`, true);
+  } catch (e) {
+    toast('Erreur : ' + e.message, 'err');
+  } finally {
+    producerDone = true;
+  }
+
+  await Promise.all(imageWorkers);
+  updateCount();
+  PIPE.running = false;
+  $('generateBtn').disabled = false;
+  $('generateBtn').textContent = '🎬 Générer';
+  $('pauseBtn').classList.add('hidden');
+  $('resumeBtn').classList.add('hidden');
+  $('stopBtn').disabled = true;
+  if (PIPE.stopped) toast('Génération arrêtée. Les images déjà terminées sont conservées.', 'info');
+  else if (!PIPE.failed) toast(`Terminé : ${PIPE.done}/${PIPE.total} image(s) générée(s).`, 'ok');
+  else toast(`Terminé : ${PIPE.done} réussie(s), ${PIPE.failed} échec(s).`, 'warn');
+}
+
+/* ---------- Contrôles pause / stop / reprendre ---------- */
+function bindPipelineControls() {
+  $('pauseBtn').addEventListener('click', () => {
+    PIPE.paused = true;
+    $('pauseBtn').classList.add('hidden');
+    $('resumeBtn').classList.remove('hidden');
+    toast('En pause — les tâches en cours continuent', 'info');
+  });
+  $('resumeBtn').addEventListener('click', () => {
+    PIPE.paused = false;
+    $('resumeBtn').classList.add('hidden');
+    $('pauseBtn').classList.remove('hidden');
+    toast('Reprise…', 'info');
+  });
+  $('stopBtn').addEventListener('click', () => {
+    PIPE.stopped = true;
+    $('stopBtn').disabled = true;
+    toast('Arrêt demandé', 'info');
+  });
+}
+
+/* ============================================================
+   HISTORIQUE
+============================================================ */
+let HIST_STATE = { page: 1, perPage: 30, total: 0, items: [], favOnly: false };
+
+async function loadHistory(page = 1) {
+  const box = $('historyBox');
+  const pag = $('historyPagination');
+  const favOnly = $('historyFavOnly').checked;
+  box.innerHTML = '<p class="sub">⏳ Chargement…</p>';
+  pag.classList.add('hidden');
+  try {
+    const r = await Backend.history(page, 30, favOnly);
+    const items = r.items || [];
+    HIST_STATE = { page: r.page || page, perPage: r.per_page || 30, total: r.total || 0, items, favOnly };
+
+    if (!items.length) {
+      box.innerHTML = '<p class="sub">' + (favOnly ? 'Aucun favori pour le moment.' : 'Aucune génération pour le moment.') + '</p>';
+      return;
+    }
+
+    // Groupes de 30 → session avec 3 visibles par défaut
+    const sessionGroups = [];
+    for (let i = 0; i < items.length; i += 30) {
+      sessionGroups.push(items.slice(i, i + 30));
+    }
+
+    box.innerHTML = sessionGroups.map((group, si) => {
+      const startId = group[group.length - 1]?.id ?? 0;
+      const endId = group[0]?.id ?? 0;
+      const visible = group.slice(0, 3);
+      const hidden = group.slice(3);
+      return `
+      <div class="session-block" data-session="${si}">
+        <div class="session-header">
+          <span class="s-arrow">▶</span>
+          <span class="s-title">Session ${si + 1} · ${group.length} image(s)</span>
+          <span class="s-meta">ids ${startId}–${endId}</span>
+        </div>
+        <div class="session-body">
+          <div class="result-grid">${visible.map((it, idx) => renderHistoryCard(it, si, idx)).join('')}</div>
+          ${hidden.length ? `<div class="result-grid" data-hidden-session="${si}" style="display:none;margin-top:1rem">${hidden.map((it, idx) => renderHistoryCard(it, si, idx + 3)).join('')}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    // Bind : clic sur en-tête de session
+    box.querySelectorAll('.session-block').forEach(block => {
+      const header = block.querySelector('.session-header');
+      header.addEventListener('click', () => {
+        block.classList.toggle('open');
+        if (block.classList.contains('open')) {
+          const hiddenBox = block.querySelector('[data-hidden-session]');
+          if (hiddenBox) hiddenBox.style.display = '';
+        }
+      });
+    });
+
+    // Bind : cartes
+    bindHistoryCards(box);
+
+    // Pagination
+    const totalPages = Math.max(1, Math.ceil(HIST_STATE.total / HIST_STATE.perPage));
+    if (totalPages > 1) {
+      pag.classList.remove('hidden');
+      pag.innerHTML = `
+        <button class="btn-mini" data-page="${Math.max(1, page-1)}" ${page<=1?'disabled':''}>← Précédent</button>
+        <span class="page-info">Page ${page} / ${totalPages} · ${HIST_STATE.total} image(s)</span>
+        <button class="btn-mini" data-page="${Math.min(totalPages, page+1)}" ${page>=totalPages?'disabled':''}>Suivant →</button>
+      `;
+      pag.querySelectorAll('[data-page]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = parseInt(btn.dataset.page, 10);
+          if (p && p !== page) loadHistory(p);
+        });
+      });
+    }
+  } catch(e) {
+    box.innerHTML = '<p class="sub">Erreur : ' + esc(e.message) + '</p>';
+  }
+}
+
+function renderHistoryCard(it) {
+  const isFav = parseInt(it.is_favorite || 0, 10) === 1;
+  return `
+    <div class="img-card history-card" data-id="${it.id}" data-url="${esc(it.image_url)}" data-style="${esc(it.style_slug||'')}">
+      <button class="fav-btn ${isFav ? 'active' : ''}" data-fav title="Favori">${isFav ? '★' : '☆'}</button>
+      <div class="img-wrap">
+        <img src="${esc(it.image_url)}" alt="" loading="lazy" style="border:2px solid var(--green)">
+      </div>
+      <div class="info">
+        <div class="meta">${esc(it.style_slug||'')} · ${esc(it.created_at)}</div>
+        <textarea class="prompt-edit">${esc(it.final_prompt)}</textarea>
+        <div class="actions">
+          <button class="btn-mini" data-copy>📋 Copier</button>
+          <button class="btn-mini" data-regen>↻ Régénérer</button>
+          <span class="status" data-msg style="display:none;margin:0;padding:.25rem .5rem;font-size:.65rem"></span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function bindHistoryCards(box) {
+  box.querySelectorAll('.history-card').forEach(card => {
+    const ta = card.querySelector('.prompt-edit');
+    const msg = card.querySelector('[data-msg]');
+    const styleSlug = card.dataset.style || '';
+    const parentId = parseInt(card.dataset.id, 10) || null;
+    const favBtn = card.querySelector('[data-fav]');
+
+    if (favBtn) {
+      favBtn.addEventListener('click', () => toggleFavorite(parentId, favBtn));
+    }
+
+    const copyBtn = card.querySelector('[data-copy]');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(ta.value)
+          .then(() => toast('Prompt copié', 'ok'))
+          .catch(() => toast('Copie impossible', 'err'));
+      });
+    }
+
+    const regenBtn = card.querySelector('[data-regen]');
+    if (regenBtn) {
+      regenBtn.addEventListener('click', async (ev) => {
+        if (!apiKeys.length) { toast('Configurez vos clés API', 'err'); return; }
+        const btn = ev.currentTarget;
+        if (btn.disabled) return;
+        btn.disabled = true;
+        msg.style.display = 'inline-block';
+        msg.className = 'status';
+        msg.innerHTML = '<span class="spinner"></span> Régénération…';
+
+        const prompt = ta.value.trim();
+        if (!prompt) { toast('Prompt vide', 'err'); btn.disabled = false; return; }
+        const size = $('sizeSelect').value;
+        const ratio = $('ratioSelect').value;
+
+        try {
+          const url = await Backend.generateImage(prompt, apiKeys, 'regen_hist_' + Date.now(), size, ratio);
+          const imgWrap = card.querySelector('.img-wrap');
+          const oldImgs = imgWrap.querySelectorAll('img');
+          oldImgs.forEach(im => { im.classList.remove('new'); im.classList.add('old'); });
+          const newImg = document.createElement('img');
+          newImg.src = url.url;
+          newImg.className = 'new';
+          newImg.loading = 'lazy';
+          newImg.alt = 'regenerated';
+          imgWrap.appendChild(newImg);
+
+          msg.className = 'status ok';
+          msg.textContent = '✓ Nouvelle image';
+          toast('Image régénérée', 'ok');
+
+          Backend.logGeneration({
+            style_slug: styleSlug,
+            user_input: '',
+            used_image: 0,
+            vision_desc: '',
+            final_prompt: prompt,
+            image_url: url.url,
+            parent_id: parentId,
+          }).catch(() => {});
+        } catch (e) {
+          msg.className = 'status err';
+          msg.textContent = '❌ ' + e.message;
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
+  });
+}
+
+/* ============================================================
+   FAVORIS (onglet dédié)
+============================================================ */
+let FAV_STATE = { page: 1, perPage: 30, total: 0, items: [] };
+
+async function loadFavorites(page = 1) {
+  const box = $('favBox');
+  const pag = $('favPagination');
+  box.innerHTML = '<p class="sub">⏳ Chargement…</p>';
+  pag.classList.add('hidden');
+  try {
+    const r = await Backend.getFavorites(page, 30);
+    const items = r.items || [];
+    FAV_STATE = { page: r.page || page, perPage: r.per_page || 30, total: r.total || 0, items };
+
+    if (!items.length) {
+      box.innerHTML = '<p class="sub">Aucun favori pour le moment. Cliquez sur ⭐ sur une image pour l\'ajouter ici.</p>';
+      return;
+    }
+
+    box.innerHTML = '<div class="result-grid">' + items.map(it => renderHistoryCard(it)).join('') + '</div>';
+    bindHistoryCards(box);
+
+    const totalPages = Math.max(1, Math.ceil(FAV_STATE.total / FAV_STATE.perPage));
+    if (totalPages > 1) {
+      pag.classList.remove('hidden');
+      pag.innerHTML = `
+        <button class="btn-mini" data-page="${Math.max(1, page-1)}" ${page<=1?'disabled':''}>← Précédent</button>
+        <span class="page-info">Page ${page} / ${totalPages} · ${FAV_STATE.total} favori(s)</span>
+        <button class="btn-mini" data-page="${Math.min(totalPages, page+1)}" ${page>=totalPages?'disabled':''}>Suivant →</button>
+      `;
+      pag.querySelectorAll('[data-page]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = parseInt(btn.dataset.page, 10);
+          if (p && p !== page) loadFavorites(p);
+        });
+      });
+    }
+  } catch(e) {
+    box.innerHTML = '<p class="sub">Erreur : ' + esc(e.message) + '</p>';
+  }
+}
+
+/* ============================================================
+   TABS
+============================================================ */
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  ['create','admin','bulk','history','favorites'].forEach(id => {
+    const el = $('tab-' + id);
+    if (el) el.classList.toggle('hidden', id !== name);
+  });
+  if (name === 'history') loadHistory(1);
+  if (name === 'bulk') loadStoryboards();
+  if (name === 'favorites') loadFavorites(1);
+}
+
+/* ============================================================
+   BOOT
+============================================================ */
+async function bootApp() {
+  // Restaure les clés API
+  try {
+    const saved = JSON.parse(localStorage.getItem(CFG.lsKeys) || '[]');
+    if (saved.length) {
+      apiKeys = saved;
+      $('apiInput').value = saved.join('\n');
+      $('apiStatus').className = 'status ok';
+      $('apiStatus').textContent = '✓ ' + saved.length + ' clé(s) restaurée(s)';
+    }
+  } catch(e){}
+  updateApiTag();
+
+  // Restaure le filtre "favoris uniquement"
+  try {
+    const favFilter = localStorage.getItem(CFG.lsFavFilter) === '1';
+    if (favFilter) $('historyFavOnly').checked = true;
+  } catch(e){}
+
+  // Charge les données
+  await loadStyles();
+  await loadStoryboards();
+  bindPipelineControls();
+}
+
+/* ============================================================
+   BIND — attachement des événements
+============================================================ */
+function bind() {
+  // Auth
+  $('loginBtn').addEventListener('click', doLogin);
+  $('loginPin').addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+  $('logoutBtn').addEventListener('click', doLogout);
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => switchTab(t.dataset.tab));
+  });
+
+  // Image upload (click + drag&drop)
+  $('imageInput').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (f) await handleImage(f);
+    e.target.value = '';
+  });
+  const drop = $('imageDrop');
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.style.borderColor = 'var(--gold)';
+  }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.style.borderColor = '';
+  }));
+  drop.addEventListener('drop', async (e) => {
+    const f = e.dataTransfer.files[0];
+    if (f) await handleImage(f);
+  });
+
+  // Génération
+  $('generateBtn').addEventListener('click', generate);
+
+  // + Nouveau style
+  $('addStyleBtn').addEventListener('click', async () => {
+    const name = await showModal({
+      title: 'Nouveau style',
+      message: 'Donnez un nom à votre style.',
+      fieldLabel: 'Nom du style',
+      fieldValue: '',
+      fieldType: 'text',
+      okText: 'Suivant',
+    });
+    if (!name) return;
+    const promptTxt = await showModal({
+      title: 'Prompt système',
+      message: 'Décrivez la consigne de style (rôle, règles, palette…).',
+      fieldLabel: 'Prompt du style',
+      fieldValue: '',
+      fieldType: 'textarea',
+      okText: 'Créer',
+    });
+    if (!promptTxt) return;
+    try {
+      await Backend.saveStyle(0, name.trim(), promptTxt.trim());
+      toast('Style ajouté', 'ok');
+      await loadStyles();
+    } catch(e) { toast('Ajout : ' + e.message, 'err'); }
+  });
+
+  // + Nouvelle liste storyboard
+  $('addSbBtn').addEventListener('click', async () => {
+    const name = await showModal({
+      title: 'Nouvelle liste storyboard',
+      message: 'Donnez un nom à votre liste.',
+      fieldLabel: 'Nom de la liste',
+      fieldValue: '',
+      fieldType: 'text',
+      okText: 'Créer',
+    });
+    if (!name) return;
+    try {
+      await Backend.saveStoryboard(0, name.trim(), ['gros plan', 'portrait', 'plan américain']);
+      toast('Liste ajoutée', 'ok');
+      await loadStoryboards();
+    } catch(e) { toast('Ajout : ' + e.message, 'err'); }
+  });
+
+  // API panel (accordéon)
+  $('apiHead').addEventListener('click', () => {
+    $('apiBody').classList.toggle('open');
+    $('apiChevron').textContent = $('apiBody').classList.contains('open') ? '▼' : '▲';
+  });
+  $('apiValidate').addEventListener('click', validateKeys);
+  $('apiClear').addEventListener('click', () => {
+    $('apiInput').value = '';
+    apiKeys = [];
+    try { localStorage.removeItem(CFG.lsKeys); } catch(e){}
+    $('apiStatus').className = 'status';
+    $('apiStatus').textContent = 'Aucune clé configurée';
+    updateApiTag();
+  });
+
+  // Storyboard checkbox
+  $('storyboardCheck').addEventListener('change', () => {
+    $('sbSelectWrap').classList.toggle('hidden', !$('storyboardCheck').checked);
+    updateSbHint();
+  });
+  $('storyboardSelect').addEventListener('change', updateSbHint);
+
+  // Filtre favoris (persistant)
+  $('historyFavOnly').addEventListener('change', () => {
+    try {
+      localStorage.setItem(CFG.lsFavFilter, $('historyFavOnly').checked ? '1' : '0');
+    } catch(e){}
+    loadHistory(1);
+  });
+
+  // Initialisation selon l'état de connexion
+  if (LOGGED) {
+    $('loginBox').classList.add('hidden');
+    $('main').classList.remove('hidden');
+    $('logoutBtn').classList.remove('hidden');
+    $('globalStat').innerHTML = 'Connecté : <b>' + esc(CURRENT_USER) + '</b>';
+    bootApp();
+  } else {
+    $('main').classList.add('hidden');
+  }
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+else bind();
+
+
+</script>
+</body>
+</html>
